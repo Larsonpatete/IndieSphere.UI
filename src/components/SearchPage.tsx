@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
+import { SpotifyService } from '../api/SpotifyService';
 import { SearchBar } from './SearchBar';
-import FullLogo from '../Assets/Full_Logo_Black_CMYK.svg'; // Adjust path as needed
+import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
+import Globe from '../Assets/globe.svg'
+import '../styles/SearchPage.css';
+// import bg from '../Assets/starry-sky.jpg'
+
+const spotifyService = new SpotifyService();
+
 
 interface Song {
   title: string;
@@ -20,11 +27,8 @@ export function SearchPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://localhost:7598/api/spotify/search?query=${encodeURIComponent(searchQuery)}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch search results.');
-      }
-      const apiData = await response.json();
+      const apiData = await spotifyService.search(searchQuery);
+      //const apiData = await response.json();
       console.log('API response:', apiData);
 
       // Map API fields to Song interface
@@ -46,12 +50,19 @@ export function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="flex flex-col items-center">
-        <h1 className="text-4xl font-extrabold text-gray-800 mb-8 tracking-tight drop-shadow-lg">
-          Indie Sphere
-        </h1>
-        {/* Center the search bar horizontally */}
+    <div className="min-h-screen background">
+      <div className="flex flex-col items-center mt-32 mb-16">
+        <div className="relative flex justify-center items-center mb-16" style={{ height: '120px' }}>
+          <img
+            src={Globe}
+            alt="Globe"
+            className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none"
+            style={{ zIndex: 0 }}
+          />
+          <h1 className="text-7xl font-extrabold text-[rgb(211,0,247)] tracking-tight drop-shadow-lg">
+            Indie Sphere
+          </h1>
+        </div>
         <div className="flex justify-center w-full mb-4">
           <div className="w-full md:w-1/2">
             <SearchBar onSearch={handleSearch} />
@@ -60,18 +71,18 @@ export function SearchPage() {
         {loading && <p className="text-blue-500 mt-4">Loading...</p>}
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 px-6">
+      <div className="flex flex-wrap justify-center gap-4 mt-2 px-6">
         {results.map((song, idx) => (
           <div
             key={idx}
-            className="relative p-4 bg-white rounded shadow hover:shadow-lg transition flex flex-col items-center"
-            style={{ minHeight: '200px' }} // Increase card height as needed
+            className="relative p-4 bg-gray-300 hover:bg-gray-400 rounded shadow hover:shadow-lg transition flex flex-col items-center max-h-lg max-w-xs"
+            style={{ minHeight: '200px' }}
           >
             {song.albumImageUrl && (
               <img
                 src={song.albumImageUrl}
                 alt={song.title}
-                className="w-full h-70 object-cover rounded mb-2" // Increased height
+                className="h-70 object-cover rounded mb-2" 
               />
             )}
             <h3 className="text-lg font-semibold">{song.title}</h3>
@@ -96,7 +107,7 @@ export function SearchPage() {
               </a>
             )}
             <img
-              src={FullLogo}
+              src={SpotifyLogo}
               alt="Logo"
               className="w-12 h-12 absolute bottom-2 right-2 opacity-80 pointer-events-none"
               style={{ zIndex: 1 }}
