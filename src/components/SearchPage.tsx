@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SpotifyService } from '../api/SpotifyService';
 import { SearchBar } from './SearchBar';
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import Globe from '../Assets/globe.svg'
 import '../styles/SearchPage.css';
-// import bg from '../Assets/starry-sky.jpg'
+import { useParams, useNavigate } from "react-router-dom";
 
 const spotifyService = new SpotifyService();
 
@@ -18,10 +18,16 @@ interface Song {
 }
 
 export function SearchPage() {
-  const [query, setQuery] = useState('');
+  const { query } = useParams<{ query?: string }>();
   const [results, setResults] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (query) {
+      handleSearch(query);
+    }
+  }, [query]);
 
   const handleSearch = async (searchQuery: string) => {
     setLoading(true);
@@ -51,7 +57,7 @@ export function SearchPage() {
 
   return (
     <div className="min-h-screen background">
-      <div className="flex flex-col items-center mt-32 mb-16">
+      <div className={`flex flex-col items-center mb-16 transition-all duration-500${results.length > 0 ? "" : " mt-32"}`}>
         <div className="relative flex justify-center items-center mb-16" style={{ height: '120px' }}>
           <img
             src={Globe}
@@ -59,13 +65,13 @@ export function SearchPage() {
             className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none"
             style={{ zIndex: 0 }}
           />
-          <h1 className="text-7xl font-extrabold text-[rgb(211,0,247)] tracking-tight drop-shadow-lg">
+          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg"> {/* text-[rgb(211,0,247)] */}
             Indie Sphere
           </h1>
         </div>
         <div className="flex justify-center w-full mb-4">
           <div className="w-full md:w-1/2">
-            <SearchBar onSearch={handleSearch} />
+            <SearchBar />
           </div>
         </div>
         {loading && <p className="text-blue-500 mt-4">Loading...</p>}
