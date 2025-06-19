@@ -4,7 +4,8 @@ import { SearchBar } from './SearchBar';
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import Globe from '../Assets/globe.svg'
 import '../styles/SearchPage.css';
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { SongItem } from './SongItem';
 
 const spotifyService = new SpotifyService();
 
@@ -15,6 +16,7 @@ interface Song {
   artistUrl?: string;
   trackUrl?: string;  
   albumImageUrl?: string;
+  albumName?: string;
 }
 
 export function SearchPage() {
@@ -44,6 +46,7 @@ export function SearchPage() {
         artistUrl: item.artistLink,
         trackUrl: item.songLink,
         albumImageUrl: item.coverArtLink,
+        albumName: item.album
       }));
 
       setResults(data);
@@ -78,48 +81,7 @@ export function SearchPage() {
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
       <div className="flex flex-wrap justify-center gap-4 mt-2 px-6">
-        {results.map((song, idx) => (
-          <div
-            key={idx}
-            className="relative p-4 bg-gray-300 hover:bg-gray-400 rounded shadow hover:shadow-lg transition flex flex-col items-center max-h-lg max-w-xs"
-            style={{ minHeight: '200px' }}
-          >
-            {song.albumImageUrl && (
-              <img
-                src={song.albumImageUrl}
-                alt={song.title}
-                className="h-70 object-cover rounded mb-2" 
-              />
-            )}
-            <h3 className="text-lg font-semibold">{song.title}</h3>
-            <p className="text-sm text-gray-700">
-              <a
-                href={song.artistUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                {song.artist}
-              </a>
-            </p>
-            {song.trackUrl && (
-              <a
-                href={song.trackUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block mt-2 text-sm text-green-600 hover:underline"
-              >
-                Listen on Spotify
-              </a>
-            )}
-            <img
-              src={SpotifyLogo}
-              alt="Logo"
-              className="w-12 h-12 absolute bottom-2 right-2 opacity-80 pointer-events-none"
-              style={{ zIndex: 1 }}
-            />
-          </div>
-        ))}
+        <SongItem songs={results} />
       </div>
     </div>
   );
