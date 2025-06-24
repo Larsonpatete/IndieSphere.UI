@@ -1,23 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { SpotifyService } from '../api/SpotifyService';
 import { SearchBar } from './SearchBar';
-import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import Globe from '../Assets/globe.svg'
 import '../styles/SearchPage.css';
 import { useParams } from "react-router-dom";
 import { SongItem } from './SongItem';
+import { Song } from '../domain/Song';
+import { SearchService } from '../api/SearchService';
+import defaultAlbumImageUrl from '../Assets/defaultAlbum.svg';
 
-const spotifyService = new SpotifyService();
+const searchService = new SearchService();
 
-
-interface Song {
-  title: string;
-  artist: string;
-  artistUrl?: string;
-  trackUrl?: string;  
-  albumImageUrl?: string;
-  albumName?: string;
-}
 
 export function SearchPage() {
   const { query } = useParams<{ query?: string }>();
@@ -35,21 +28,36 @@ export function SearchPage() {
     setLoading(true);
     setError(null);
     try {
-      const apiData = await spotifyService.search(searchQuery);
+      const apiData = await searchService.search(searchQuery);
       //const apiData = await response.json();
       console.log('API response:', apiData);
 
-      // Map API fields to Song interface
-      const data: Song[] = apiData.map((item: any) => ({
-        title: item.name,
-        artist: item.artist,
-        artistUrl: item.artistLink,
-        trackUrl: item.songLink,
-        albumImageUrl: item.coverArtLink,
-        albumName: item.album
+      const songsData = apiData.results; // Access the "result" property
+
+      if (!Array.isArray(songsData)) {
+        throw new Error("Invalid songs data format");
+      }
+
+      // Map API response to Song domain model
+      const songs: Song[] = songsData.map((item: any) => ({
+        id: item.id,
+        title: item.title || item.name,
+        artist: {
+          id: item.artist.id,
+          name: item.artist.name,
+          url: item.artist.url,
+          genres: item.artist.genres || []  // Use artist's genres if available
+        },
+        album: item.album,
+        albumImageUrl: item.albumImageUrl || defaultAlbumImageUrl,
+        trackUrl: item.trackUrl,
+        genres: item.genres || [],  // Use song-level genres
+        isExplicit: item.isExplicit,
+        // Add durationMs if available in your actual response
+        durationMs: item.durationMs || 0  // Default to 0 if missing
       }));
 
-      setResults(data);
+      setResults(songs);
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching results.');
@@ -81,8 +89,10 @@ export function SearchPage() {
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
       <div className="flex flex-wrap justify-center gap-4 mt-2 px-6">
-        <SongItem songs={results} />
+          {results.map(song => (
+            <SongItem key={song.id} song={song} />
+          ))}
       </div>
     </div>
-  );
+);
 }
