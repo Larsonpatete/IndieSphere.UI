@@ -3,20 +3,42 @@ import { SpotifyService } from '../api/SpotifyService';
 import { SearchBar } from './SearchBar';
 import Globe from '../Assets/globe.svg'
 import '../styles/SearchPage.css';
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { SongItem } from './SongItem';
 import { Song } from '../domain/Song';
 import { SearchService } from '../api/SearchService';
 import defaultAlbumImageUrl from '../Assets/defaultAlbum.svg';
+import { useSongMapper } from '../hooks/useSongMapper';
 
 const searchService = new SearchService();
-
+const ITEMS_PER_PAGE = 20; // Number of songs to show per page
 
 export function SearchPage() {
   const { query } = useParams<{ query?: string }>();
+  const location = useLocation();
   const [results, setResults] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { mapSong } = useSongMapper();
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  // Check for clear results flag
+  useEffect(() => {
+    // If we navigated to root with clearResults flag, clear the results
+    if (location.pathname === '/' && location.state && (location.state as any).clearResults) {
+      setResults([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+      setTotalCount(0);
+      
+      // Clear the state flag so it doesn't keep clearing on other navigations
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (query) {
@@ -24,40 +46,33 @@ export function SearchPage() {
     }
   }, [query]);
 
-  const handleSearch = async (searchQuery: string) => {
+  // Reset to page 1 when new search is performed
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [query]);
+
+  const handleSearch = async (searchQuery: string, page: number = 1) => {
     setLoading(true);
     setError(null);
     try {
-      const apiData = await searchService.search(searchQuery);
-      //const apiData = await response.json();
+      const offset = (page - 1) * ITEMS_PER_PAGE;
+      console.log(`Searching for: ${searchQuery} (Page: ${page}, Offset: ${offset})`);
+      const apiData = await searchService.search(searchQuery, ITEMS_PER_PAGE, offset);
       console.log('API response:', apiData);
 
-      const songsData = apiData.results; // Access the "result" property
+      const songsData = apiData.results;
+      const totalCount = apiData.totalCount || songsData.length; // Get total count from API response
 
       if (!Array.isArray(songsData)) {
         throw new Error("Invalid songs data format");
       }
 
-      // Map API response to Song domain model
-      const songs: Song[] = songsData.map((item: any) => ({
-        id: item.id,
-        title: item.title || item.name,
-        artist: {
-          id: item.artist.id,
-          name: item.artist.name,
-          url: item.artist.url,
-          genres: item.artist.genres || []  // Use artist's genres if available
-        },
-        album: item.album,
-        albumImageUrl: item.albumImageUrl || defaultAlbumImageUrl,
-        trackUrl: item.trackUrl,
-        genres: item.genres || [],  // Use song-level genres
-        isExplicit: item.isExplicit,
-        // Add durationMs if available in your actual response
-        durationMs: item.durationMs || 0  // Default to 0 if missing
-      }));
-
+      const songs = songsData.map((item: any) => mapSong(item));
       setResults(songs);
+      setTotalCount(totalCount);
+      
+      // Calculate total pages based on total count from API
+      setTotalPages(Math.ceil(totalCount / ITEMS_PER_PAGE));
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching results.');
@@ -66,8 +81,92 @@ export function SearchPage() {
     }
   };
 
+  // Get current page items
+  const getCurrentPageItems = (): Song[] => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return results.slice(startIndex, endIndex);
+  };
+
+  // Page change handler
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (query) {
+      handleSearch(query, page);
+    }
+    // Scroll to top when changing pages
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Pagination component
+  const Pagination = () => {
+    if (totalPages <= 1) return null;
+
+    return (
+      <div className="flex justify-center mt-8 mb-24">
+        <div className="flex items-center space-x-2">
+          {/* Previous page button */}
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            ←
+          </button>
+
+          {/* Page numbers */}
+          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+            let pageNumber:  number;
+            
+            // Show pages around current page
+            if (totalPages <= 5) {
+              pageNumber = i + 1;
+            } else if (currentPage <= 3) {
+              pageNumber = i + 1;
+            } else if (currentPage >= totalPages - 2) {
+              pageNumber = totalPages - 4 + i;
+            } else {
+              pageNumber = currentPage - 2 + i;
+            }
+            
+            return (
+              <button
+                key={pageNumber}
+                onClick={() => handlePageChange(pageNumber)}
+                className={`px-3 py-1 rounded-md ${
+                  currentPage === pageNumber
+                    ? 'bg-blue-500 text-white'
+                    : 'text-purple-300 hover:bg-blue-100 dark:hover:bg-gray-700'
+                }`}
+              >
+                {pageNumber}
+              </button>
+            );
+          })}
+
+          {/* Next page button */}
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-3 py-1 rounded-md ${
+              currentPage === totalPages
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700'
+            }`}
+          >
+            →
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen background">
+    <div className="min-h-screen">
       <div className={`flex flex-col items-center mb-16 transition-all duration-500${results.length > 0 ? "" : " mt-32"}`}>
         <div className="relative flex justify-center items-center mb-16" style={{ height: '120px' }}>
           <img
@@ -76,7 +175,7 @@ export function SearchPage() {
             className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none"
             style={{ zIndex: 0 }}
           />
-          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg"> {/* text-[rgb(211,0,247)] */}
+          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg">
             Indie Sphere
           </h1>
         </div>
@@ -88,11 +187,25 @@ export function SearchPage() {
         {loading && <p className="text-blue-500 mt-4">Loading...</p>}
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>
+      
+      {/* Results count */}
+      {results.length > 0 && (
+        <div className="text-center mb-4">
+          <p className="text-white opacity-80">
+            Found {totalCount} results • Page {currentPage} of {totalPages}
+          </p>
+        </div>
+      )}
+      
+      {/* Results grid */}
       <div className="flex flex-wrap justify-center gap-4 mt-2 px-6">
-          {results.map(song => (
-            <SongItem key={song.id} song={song} />
-          ))}
+        {results.map(song => (
+          <SongItem key={song.id} song={song} />
+        ))}
       </div>
+      
+      {/* Pagination controls */}
+      {results.length > 0 && <Pagination />}
     </div>
-);
+  );
 }
