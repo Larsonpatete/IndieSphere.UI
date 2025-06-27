@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import { Song } from '../domain/Song';
+import { useTheme } from '../context/ThemeContext'; // Import after you've set up theme context
 
 interface SongItemProps {
   song: Song;
@@ -9,6 +10,7 @@ interface SongItemProps {
 
 export const SongItem: React.FC<SongItemProps> = ({ song }) => {
   const navigate = useNavigate();
+  const { theme } = useTheme(); // Use this after you've set up theme context
   
   // Helper function to format duration from milliseconds
   const formatDuration = (milliseconds: number): string => {
@@ -24,9 +26,15 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
     navigate(`/songdetails/${song.id}`);
   };
 
+  // Define the card style based on theme (if theme context is set up)
+  // If you haven't set up theme context yet, remove the conditional and just use the white style
+  const cardStyle = theme === 'dark' 
+    ? "bg-gray-800 hover:bg-gray-700 text-white"
+    : "bg-white hover:bg-gray-100 text-gray-800";
+
   return (
     <div 
-      className="relative p-4 bg-gray-300 hover:bg-gray-400 rounded shadow hover:shadow-lg transition flex flex-col items-center max-h-lg max-w-xs cursor-pointer"
+      className={`relative p-4 ${cardStyle} rounded-lg shadow-md hover:shadow-lg transition flex flex-col items-center max-h-lg max-w-xs cursor-pointer`}
       style={{ minHeight: '200px' }}
       onClick={handleClick}
     >
@@ -48,12 +56,12 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
       </h3>
       
       {song.album && (
-        <h4 className="text-md text-gray-600 truncate w-full text-center">
+        <h4 className={`text-md ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} truncate w-full text-center`}>
           {song.album}
         </h4>
       )}
       
-      <p className="text-sm text-gray-700 truncate w-full text-center">
+      <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} truncate w-full text-center`}>
         <a
           href={song.artist.url}
           target="_blank"
@@ -64,7 +72,7 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
         </a>
       </p>
 
-        {song.trackUrl && (
+      {song.trackUrl && (
         <a
           href={song.trackUrl}
           target="_blank"
@@ -78,37 +86,23 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
       
       {/* Add release date */}
       {song.releaseDate && (
-        <p className="text-xs text-gray-600 mt-1">
+        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
           Released: {new Date(song.releaseDate).toLocaleDateString()}
         </p>
       )}
       
       {/* Add duration - fixed for milliseconds */}
       {song.durationMs && (
-        <p className="text-xs text-gray-600">
+        <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
           Duration: {formatDuration(song.durationMs)}
         </p>
       )}
       
-      {/* {song.genres.length > 0 && ( // dont really need this
-        <div className="mt-2 flex flex-wrap justify-center gap-1">
-          {song.genres.map(genre => (
-            <span 
-              key={genre.id} 
-              className="bg-gray-200 text-gray-700 text-xs px-2 py-1 rounded-full"
-            >
-              {genre.name}
-            </span>
-          ))}
-        </div>
-      )} */}
-    
-      
-      {/* Add Spotify logo */}
+      {/* Add Spotify logo - use white version for dark theme */}
       <img
         src={SpotifyLogo}
         alt="Spotify"
-        className="w-12 h-12 absolute bottom-2 right-2 opacity-80 pointer-events-none"
+        className={`w-12 h-12 absolute bottom-2 right-2 ${theme === 'dark' ? 'invert opacity-50' : 'opacity-80'} pointer-events-none`}
         style={{ zIndex: 1 }}
       />
     </div>

@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.dark-theme .background {
+  background-image: url('../Assets/background.jpg'); /* Your space background */
+  color: #f3f4f6;
+}
+
+.light-theme .background {
+  background-image: url('../Assets/sky.jpg'); /* Your sky background */
+  color: #1f2937;
+}

@@ -14,7 +14,7 @@ const searchService = new SearchService();
 const ITEMS_PER_PAGE = 20; // Number of songs to show per page
 
 export function SearchPage() {
-  const { query } = useParams<{ query?: string }>();
+  const { type, query } = useParams<{ type?: string; query?: string }>();
   const location = useLocation();
   const [results, setResults] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,28 +40,52 @@ export function SearchPage() {
     }
   }, [location]);
 
+  // Modify your useEffect to handle search types
   useEffect(() => {
-    if (query) {
-      handleSearch(query);
+    if (query && type) {
+      handleSearch(query, 1, type);
     }
-  }, [query]);
+  }, [query, type]);
 
   // Reset to page 1 when new search is performed
   useEffect(() => {
     setCurrentPage(1);
   }, [query]);
 
-  const handleSearch = async (searchQuery: string, page: number = 1) => {
+  // Update your handleSearch function
+  const handleSearch = async (searchQuery: string, page: number = 1, searchType: string = 'song') => {
     setLoading(true);
     setError(null);
     try {
       const offset = (page - 1) * ITEMS_PER_PAGE;
-      console.log(`Searching for: ${searchQuery} (Page: ${page}, Offset: ${offset})`);
-      const apiData = await searchService.search(searchQuery, ITEMS_PER_PAGE, offset);
+      console.log(`Searching for: ${searchQuery} (Type: ${searchType}, Page: ${page}, Offset: ${offset})`);
+      
+      let apiData;
+      
+      // Call different endpoints based on search type
+      switch(searchType) {
+        case 'artist':
+          apiData = await searchService.searchArtists(searchQuery, ITEMS_PER_PAGE, offset);
+          break;
+        case 'genre':
+          apiData = await searchService.searchGenre(searchQuery, ITEMS_PER_PAGE, offset);
+          break;
+        case 'similar-song':
+          apiData = await searchService.searchSimilarSongs(searchQuery, ITEMS_PER_PAGE, offset);
+          break;
+        case 'similar-artist':
+          apiData = await searchService.searchSimilarArtists(searchQuery, ITEMS_PER_PAGE, offset);
+          break;
+        case 'song':
+        default:
+          apiData = await searchService.search(searchQuery, ITEMS_PER_PAGE, offset);
+          break;
+      }
+      
       console.log('API response:', apiData);
 
       const songsData = apiData.results;
-      const totalCount = apiData.totalCount || songsData.length; // Get total count from API response
+      const totalCount = apiData.totalCount || songsData.length;
 
       if (!Array.isArray(songsData)) {
         throw new Error("Invalid songs data format");
@@ -71,7 +95,6 @@ export function SearchPage() {
       setResults(songs);
       setTotalCount(totalCount);
       
-      // Calculate total pages based on total count from API
       setTotalPages(Math.ceil(totalCount / ITEMS_PER_PAGE));
     } catch (err) {
       console.error(err);
@@ -81,18 +104,11 @@ export function SearchPage() {
     }
   };
 
-  // Get current page items
-  const getCurrentPageItems = (): Song[] => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return results.slice(startIndex, endIndex);
-  };
-
   // Page change handler
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    if (query) {
-      handleSearch(query, page);
+    if (query && type) {
+      handleSearch(query, page, type);
     }
     // Scroll to top when changing pages
     window.scrollTo({ top: 0, behavior: 'smooth' });

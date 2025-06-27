@@ -1,6 +1,18 @@
+/* Theme-specific backgrounds */
 .background {
-  background-image: url('../Assets/starry-sky.jpg');
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  background-attachment: fixed;
   background-size: cover;
-  background-repeat: no-repeat;
   background-position: center;
+  transition: background-image 0.5s ease-in-out;
+}
+
+body.dark-theme .background {
+  background-image: url('../Assets/starry-sky.jpg'); /* Space background */
+}
+
+body.light-theme .background {
+  background-image: url('../Assets/sky.jpg'); /* Sky background */
 }
