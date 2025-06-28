@@ -40,9 +40,11 @@ export function SearchPage() {
     }
   }, [location]);
 
-  // Modify your useEffect to handle search types
+  // Modify your useEffect to handle search types and clear results when search type changes
   useEffect(() => {
     if (query && type) {
+      // Clear results when search type changes
+      setResults([]);
       handleSearch(query, 1, type);
     }
   }, [query, type]);
@@ -54,6 +56,11 @@ export function SearchPage() {
 
   // Update your handleSearch function
   const handleSearch = async (searchQuery: string, page: number = 1, searchType: string = 'song') => {
+    // Clear results before loading new ones
+    if (page === 1) {
+      setResults([]);
+    }
+    
     setLoading(true);
     setError(null);
     try {
@@ -71,10 +78,10 @@ export function SearchPage() {
           apiData = await searchService.searchGenre(searchQuery, ITEMS_PER_PAGE, offset);
           break;
         case 'similar-song':
-          apiData = await searchService.searchSimilarSongs(searchQuery, ITEMS_PER_PAGE, offset);
+          apiData = await searchService.searchSimilarSongs(searchQuery, ITEMS_PER_PAGE);
           break;
         case 'similar-artist':
-          apiData = await searchService.searchSimilarArtists(searchQuery, ITEMS_PER_PAGE, offset);
+          apiData = await searchService.searchSimilarArtists(searchQuery, ITEMS_PER_PAGE);
           break;
         case 'song':
         default:

@@ -17,13 +17,13 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
   const { theme } = useTheme(); // Get current theme
   const isDark = theme === 'dark';
 
+  // Update the handleSubmit function to not clear the search query
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       if (searchQuery.trim()) {
         // Navigate to search route with query and type
         navigate(`/search/${searchType}/${encodeURIComponent(searchQuery.trim())}`);
-        // setSearchQuery('');
       }
     },
     [searchQuery, searchType, navigate]

@@ -26,16 +26,16 @@ export class SearchService extends ApiClient {
     return response.json();
   }
 
-  async searchSimilarSongs(query: string, limit: number = 20, offset: number = 0): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/search/similar-songs?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
+  async searchSimilarSongs(query: string, limit: number = 20): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/search/similar-songs?query=${encodeURIComponent(query)}&limit=${limit}`);
     if (!response.ok) {
-      throw new Error('Similar songs search failed');
+      throw new Error('Similar songs search failed, please follow format "song by artist"');
     }
     return response.json();
   }
 
-  async searchSimilarArtists(query: string, limit: number = 20, offset: number = 0): Promise<any> {
-    const response = await fetch(`${this.baseUrl}/search/similar-artists?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
+  async searchSimilarArtists(query: string, limit: number = 20): Promise<any> {
+    const response = await fetch(`${this.baseUrl}/search/similar-artists?query=${encodeURIComponent(query)}&limit=${limit}`);
     if (!response.ok) {
       throw new Error('Similar artists search failed');
     }
