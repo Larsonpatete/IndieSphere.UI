@@ -37,6 +37,7 @@ export function useSongMapper() {
       playCount: typeof data.playCount === 'number' ? data.playCount : undefined,
       listenerCount: typeof data.listenerCount === 'number' ? data.listenerCount : undefined,
       description: data.description,
+      SimilarSongMatch: typeof data.similarSongMatch === 'number' ? data.similarSongMatch : undefined,
       
       // Audio features - all optional
       energy: typeof data.energy === 'number' ? data.energy : undefined,

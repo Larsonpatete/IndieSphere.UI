@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import { Song } from '../domain/Song';
@@ -20,6 +20,10 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
     const remainingSeconds = totalSeconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  useEffect(() => {
+    // console.log('SongItem rendered:', song.durationMs);
+  });
 
   // Add navigation to song details
   const handleClick = () => {
@@ -90,9 +94,15 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
           Released: {new Date(song.releaseDate).toLocaleDateString()}
         </p>
       )}
+
+      {song.SimilarSongMatch !== undefined && (
+        <p className={`text-s text-purple-500 mt-1`}>
+          Similarity Score: {song.SimilarSongMatch.toFixed(2)}  {/* Display similarity score if available */}
+        </p> 
+      )} 
       
       {/* Add duration - fixed for milliseconds */}
-      {song.durationMs && (
+      {song.durationMs !== 0 && (
         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
           Duration: {formatDuration(song.durationMs)}
         </p>

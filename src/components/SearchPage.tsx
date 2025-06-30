@@ -45,14 +45,10 @@ export function SearchPage() {
     if (query && type) {
       // Clear results when search type changes
       setResults([]);
+      setCurrentPage(1);
       handleSearch(query, 1, type);
     }
   }, [query, type]);
-
-  // Reset to page 1 when new search is performed
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [query]);
 
   // Update your handleSearch function
   const handleSearch = async (searchQuery: string, page: number = 1, searchType: string = 'song') => {
@@ -126,7 +122,7 @@ export function SearchPage() {
     if (totalPages <= 1) return null;
 
     return (
-      <div className="flex justify-center mt-8 mb-24">
+      <div className="flex justify-center mt-8 mb-28">
         <div className="flex items-center space-x-2">
           {/* Previous page button */}
           <button
@@ -189,7 +185,7 @@ export function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen mb-16">
       <div className={`flex flex-col items-center mb-16 transition-all duration-500${results.length > 0 ? "" : " mt-32"}`}>
         <div className="relative flex justify-center items-center mb-16" style={{ height: '120px' }}>
           <img

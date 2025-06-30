@@ -21,6 +21,7 @@ export interface Song {
   listenerCount?: number;
   description?: string;
   userTags?: string[];
+  SimilarSongMatch?: number; // Similarity score with another song
   
   // Audio features
   energy?: number;
