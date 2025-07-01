@@ -7,7 +7,13 @@ module.exports = {
     "./node_modules/@heroui/theme/dist/components/navbar.js"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'indie-purple': '#d300f7',
+        'indie-purple-light': 'rgba(211, 0, 247, 0.8)',
+        'indie-purple-dark': '#a800c8',
+      },
+    },
   },
   plugins: [heroui()],
 }

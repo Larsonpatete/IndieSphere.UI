@@ -38,7 +38,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
   const getSearchButtonColor = () => {
     switch (searchType) {
       case 'song': return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500';
-      case 'artist': return 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500';
+      case 'artist': return 'bg-indie-purple hover:bg-purple-700 focus:ring-purple-500';
       case 'genre': return 'bg-green-600 hover:bg-green-700 focus:ring-green-500';
       case 'similar-song': return 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500';
       case 'similar-artist': return 'bg-pink-600 hover:bg-pink-700 focus:ring-pink-500';
@@ -55,7 +55,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
     },
     'artist': {
       label: 'Artist',
-      textColor: isDark ? 'text-purple-300' : 'text-purple-600',
+      textColor: 'text-indie-purple',
       bgColor: isDark ? 'bg-purple-900' : 'bg-purple-100'
     },
     'genre': {
@@ -128,7 +128,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`flex-grow ${height} px-4 py-2 ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} focus:outline-none focus:ring-2 focus:ring-${
             searchType === 'song' ? 'blue' : 
-            searchType === 'artist' ? 'purple' : 
+            searchType === 'artist' ? 'indie-purple' : 
             searchType === 'genre' ? 'green' : 
             searchType === 'similar-song' ? 'indigo' : 'pink'
           }-500`}

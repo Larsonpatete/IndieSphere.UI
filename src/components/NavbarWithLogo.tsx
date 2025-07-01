@@ -38,7 +38,7 @@ export const NavbarWithLogo = () => {
           >
             <img src={Globe} className="h-16" alt="Indie Sphere" />
             {/* Remove text-inherit so it doesn't inherit the parent text color */}
-            <p className="hidden sm:block font-bold text-[rgb(211,0,247)]">
+            <p className="hidden sm:block font-bold text-indie-purple text-xl">
               Indie Sphere
             </p>
           </a>

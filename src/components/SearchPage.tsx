@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { SpotifyService } from '../api/SpotifyService';
+import React, { useState, useEffect, useCallback } from 'react';
 import { SearchBar } from './SearchBar';
 import Globe from '../Assets/globe.svg'
 import '../styles/SearchPage.css';
@@ -7,11 +6,11 @@ import { useParams, useLocation } from "react-router-dom";
 import { SongItem } from './SongItem';
 import { Song } from '../domain/Song';
 import { SearchService } from '../api/SearchService';
-import defaultAlbumImageUrl from '../Assets/defaultAlbum.svg';
 import { useSongMapper } from '../hooks/useSongMapper';
+import { useTheme } from '../context/ThemeContext';
+import { Pagination } from './Pagination'; // Import the new Pagination component
 
 const searchService = new SearchService();
-const ITEMS_PER_PAGE = 20; // Number of songs to show per page
 
 export function SearchPage() {
   const { type, query } = useParams<{ type?: string; query?: string }>();
@@ -20,11 +19,16 @@ export function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { mapSong } = useSongMapper();
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  // Add state for items per page
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // Check for clear results flag
   useEffect(() => {
@@ -50,8 +54,15 @@ export function SearchPage() {
     }
   }, [query, type]);
 
-  // Update your handleSearch function
-  const handleSearch = async (searchQuery: string, page: number = 1, searchType: string = 'song') => {
+  // Create a stable search function with useCallback
+  const performSearch = useCallback(async (
+    searchQuery: string, 
+    page: number = 1, 
+    searchType: string = 'song',
+    perPage: number = itemsPerPage // Default to current itemsPerPage
+  ) => {
+    if (!searchQuery || !searchType) return;
+    
     // Clear results before loading new ones
     if (page === 1) {
       setResults([]);
@@ -60,28 +71,28 @@ export function SearchPage() {
     setLoading(true);
     setError(null);
     try {
-      const offset = (page - 1) * ITEMS_PER_PAGE;
-      console.log(`Searching for: ${searchQuery} (Type: ${searchType}, Page: ${page}, Offset: ${offset})`);
+      const offset = (page - 1) * perPage;
+      console.log(`Searching for: ${searchQuery} (Type: ${searchType}, Page: ${page}, Offset: ${offset}, Items: ${perPage})`);
       
       let apiData;
       
       // Call different endpoints based on search type
       switch(searchType) {
         case 'artist':
-          apiData = await searchService.searchArtists(searchQuery, ITEMS_PER_PAGE, offset);
+          apiData = await searchService.searchArtists(searchQuery, perPage, offset);
           break;
         case 'genre':
-          apiData = await searchService.searchGenre(searchQuery, ITEMS_PER_PAGE, offset);
+          apiData = await searchService.searchGenre(searchQuery, perPage, offset);
           break;
         case 'similar-song':
-          apiData = await searchService.searchSimilarSongs(searchQuery, ITEMS_PER_PAGE);
+          apiData = await searchService.searchSimilarSongs(searchQuery, perPage);
           break;
         case 'similar-artist':
-          apiData = await searchService.searchSimilarArtists(searchQuery, ITEMS_PER_PAGE);
+          apiData = await searchService.searchSimilarArtists(searchQuery, perPage);
           break;
         case 'song':
         default:
-          apiData = await searchService.search(searchQuery, ITEMS_PER_PAGE, offset);
+          apiData = await searchService.search(searchQuery, perPage, offset);
           break;
       }
       
@@ -98,13 +109,18 @@ export function SearchPage() {
       setResults(songs);
       setTotalCount(totalCount);
       
-      setTotalPages(Math.ceil(totalCount / ITEMS_PER_PAGE));
+      setTotalPages(Math.ceil(totalCount / perPage));
     } catch (err) {
       console.error(err);
       setError('An error occurred while fetching results.');
     } finally {
       setLoading(false);
     }
+  }, [mapSong]); // Only depend on mapSong, not on itemsPerPage which changes frequently
+
+  // Simplified handleSearch that calls the stable performSearch
+  const handleSearch = (searchQuery: string, page: number = 1, searchType: string = 'song') => {
+    performSearch(searchQuery, page, searchType, itemsPerPage);
   };
 
   // Page change handler
@@ -117,72 +133,25 @@ export function SearchPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Pagination component
-  const Pagination = () => {
-    if (totalPages <= 1) return null;
-
-    return (
-      <div className="flex justify-center mt-8 mb-28">
-        <div className="flex items-center space-x-2">
-          {/* Previous page button */}
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-3 py-1 rounded-md ${
-              currentPage === 1
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700'
-            }`}
-          >
-            ←
-          </button>
-
-          {/* Page numbers */}
-          {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            let pageNumber:  number;
-            
-            // Show pages around current page
-            if (totalPages <= 5) {
-              pageNumber = i + 1;
-            } else if (currentPage <= 3) {
-              pageNumber = i + 1;
-            } else if (currentPage >= totalPages - 2) {
-              pageNumber = totalPages - 4 + i;
-            } else {
-              pageNumber = currentPage - 2 + i;
-            }
-            
-            return (
-              <button
-                key={pageNumber}
-                onClick={() => handlePageChange(pageNumber)}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === pageNumber
-                    ? 'bg-blue-500 text-white'
-                    : 'text-purple-300 hover:bg-blue-100 dark:hover:bg-gray-700'
-                }`}
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
-
-          {/* Next page button */}
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-3 py-1 rounded-md ${
-              currentPage === totalPages
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'text-blue-500 hover:bg-blue-100 dark:hover:bg-gray-700'
-            }`}
-          >
-            →
-          </button>
-        </div>
-      </div>
-    );
+  // Modified handler for items per page change
+  const handleItemsPerPageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newItemsPerPage = parseInt(e.target.value);
+    
+    // Set the new items per page
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+    
+    // Call search directly with the new value
+    if (query && type) {
+      performSearch(query, 1, type, newItemsPerPage);
+    }
   };
+
+  // Theme-specific text colors
+  const textColor = isDarkMode ? 'text-white' : 'text-gray-800';
+  const errorColor = 'text-red-500';
+  const loadingColor = isDarkMode ? 'text-blue-400' : 'text-blue-600';
+  const resultsTextColor = isDarkMode ? 'text-white' : 'text-gray-700';
 
   return (
     <div className="min-h-screen mb-16">
@@ -194,7 +163,7 @@ export function SearchPage() {
             className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none"
             style={{ zIndex: 0 }}
           />
-          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg">
+          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg text-indie-purple">
             Indie Sphere
           </h1>
         </div>
@@ -203,14 +172,14 @@ export function SearchPage() {
             <SearchBar />
           </div>
         </div>
-        {loading && <p className="text-blue-500 mt-4">Loading...</p>}
-        {error && <p className="text-red-500 mt-4">{error}</p>}
+        {loading && <p className={`${loadingColor} mt-4`}>Loading...</p>}
+        {error && <p className={`${errorColor} mt-4`}>{error}</p>}
       </div>
       
       {/* Results count */}
       {results.length > 0 && (
         <div className="text-center mb-4">
-          <p className="text-white opacity-80">
+          <p className={`${resultsTextColor} opacity-80`}>
             Found {totalCount} results • Page {currentPage} of {totalPages}
           </p>
         </div>
@@ -219,12 +188,44 @@ export function SearchPage() {
       {/* Results grid */}
       <div className="flex flex-wrap justify-center gap-4 mt-2 px-6">
         {results.map(song => (
-          <SongItem key={song.id} song={song} />
+          <SongItem key={song.id || `song-${song.title}-${song.artist.name}`} song={song} />
         ))}
       </div>
       
-      {/* Pagination controls */}
-      {results.length > 0 && <Pagination />}
+      {/* Items per page dropdown and pagination controls */}
+      {results.length > 0 && (
+        <div className="flex flex-row items-center mt-16 mb-28 px-32">
+          {/* Empty div for left side balance */}
+          <div className="w-48"></div>
+          
+          {/* Pagination controls - centered */}
+          <div className="flex-grow flex justify-center">
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              pageLimit={7}
+            />
+          </div>
+          
+          {/* Items per page selector - right aligned */}
+          <div className={`${isDarkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm rounded-xl p-3 shadow-lg`}>
+            <label className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              Items per page:
+              <select 
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className={`ml-2 px-2 py-1 rounded ${isDarkMode ? 'bg-gray-700 text-white' : 'bg-white text-gray-800'} border border-gray-300 focus:outline-none focus:ring-1 focus:ring-indie-purple`}
+              >
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option> {/* This is the maximum Spotify allows */}
+              </select>
+            </label>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

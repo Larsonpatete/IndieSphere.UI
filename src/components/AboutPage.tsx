@@ -14,7 +14,7 @@ export const AboutPage: React.FC = () => {
               className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none opacity-80"
               style={{ zIndex: 0 }}
             />
-            <h1 className="text-5xl font-extrabold tracking-tight drop-shadow-lg relative z-10">
+            <h1 className="text-5xl font-extrabold tracking-tight drop-shadow-lg relative z-10 text-indie-purple">
               About Indie Sphere
             </h1>
           </div>
@@ -47,28 +47,28 @@ export const AboutPage: React.FC = () => {
             <h2 className="text-3xl font-bold text-blue-400 mb-4">Features</h2>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-xl font-semibold text-purple-300 mb-2">Deep Music Discovery</h3>
+                <h3 className="text-xl font-semibold text-indie-purple mb-2">Deep Music Discovery</h3>
                 <p>
                   Search across a vast catalog of independent music from around the world, with detailed 
                   audio features and metadata to help you find exactly what you're looking for.
                 </p>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-purple-300 mb-2">Comprehensive Details</h3>
+                <h3 className="text-xl font-semibold text-indie-purple mb-2">Comprehensive Details</h3>
                 <p>
                   Get rich information about songs including audio characteristics, popularity metrics, 
                   and release information all in one place.
                 </p>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-purple-300 mb-2">Connect to Streaming</h3>
+                <h3 className="text-xl font-semibold text-indie-purple mb-2">Connect to Streaming</h3>
                 <p>
                   Easily listen to tracks through integrated streaming services and add discoveries 
                   to your personal music library.
                 </p>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-purple-300 mb-2">Indie Focus</h3>
+                <h3 className="text-xl font-semibold text-indie-purple mb-2">Indie Focus</h3>
                 <p>
                   Our platform is specifically designed to highlight independent artists and releases 
                   that deserve more attention.
