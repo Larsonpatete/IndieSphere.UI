@@ -9,6 +9,7 @@ import { SearchService } from '../api/SearchService';
 import { useSongMapper } from '../hooks/useSongMapper';
 import { useTheme } from '../context/ThemeContext';
 import { Pagination } from './Pagination'; // Import the new Pagination component
+import PopularitySlider from './PopularitySlider';
 
 const searchService = new SearchService();
 
@@ -29,6 +30,9 @@ export function SearchPage() {
 
   // Add state for items per page
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Popularity filter state
+  const [popularityFilter, setPopularityFilter] = useState<[number, number]>([0, 100]);
 
   // Check for clear results flag
   useEffect(() => {
@@ -118,6 +122,76 @@ export function SearchPage() {
     }
   }, [mapSong]); // Only depend on mapSong, not on itemsPerPage which changes frequently
 
+  // Enhanced search function that includes filters
+  const performSearchWithFilters = useCallback(async (
+    searchQuery: string,
+    page: number = 1,
+    searchType: string = 'song',
+    perPage: number = itemsPerPage
+  ) => {
+    if (!searchQuery || !searchType) return;
+    
+    // Clear results before loading new ones
+    if (page === 1) {
+      setResults([]);
+    }
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const offset = (page - 1) * perPage;
+      
+      // Include filter parameters in the API call
+      const filters = {
+        minPopularity: popularityFilter[0],
+        maxPopularity: popularityFilter[1],
+      };
+      
+      console.log(`Searching with filters: ${JSON.stringify(filters)}`);
+      
+      let apiData;
+      
+      // Call different endpoints based on search type
+      switch(searchType) {
+        case 'artist':
+          apiData = await searchService.searchArtists(searchQuery, perPage, offset, filters);
+          break;
+        case 'genre':
+          apiData = await searchService.searchGenre(searchQuery, perPage, offset);
+          break;
+        case 'similar-song':
+          apiData = await searchService.searchSimilarSongs(searchQuery, perPage, filters);
+          break;
+        case 'similar-artist':
+          apiData = await searchService.searchSimilarArtists(searchQuery, perPage, filters);
+          break;
+        case 'song':
+        default:
+          apiData = await searchService.search(searchQuery, perPage, offset, filters);
+          break;
+      }
+      
+      // Process results as before
+      const songsData = apiData.results;
+      const totalCount = apiData.totalCount || songsData.length;
+
+      if (!Array.isArray(songsData)) {
+        throw new Error("Invalid songs data format");
+      }
+
+      const songs = songsData.map((item: any) => mapSong(item));
+      setResults(songs);
+      setTotalCount(totalCount);
+      
+      setTotalPages(Math.ceil(totalCount / perPage));
+    } catch (err) {
+      console.error(err);
+      setError('An error occurred while fetching results.');
+    } finally {
+      setLoading(false);
+    }
+  }, [mapSong, popularityFilter]); // Include popularityFilter in dependencies
+
   // Simplified handleSearch that calls the stable performSearch
   const handleSearch = (searchQuery: string, page: number = 1, searchType: string = 'song') => {
     performSearch(searchQuery, page, searchType, itemsPerPage);
@@ -147,6 +221,22 @@ export function SearchPage() {
     }
   };
 
+  // Handler for popularity filter changes
+  const handlePopularityFilterChange = (minPopularity: number) => {
+    // Reset to page 1 when filter changes
+    setCurrentPage(1);
+    
+    // Apply filter with current search
+    if (query && type) {
+      performSearchWithFilters(query, 1, type, itemsPerPage);
+    }
+  };
+  
+  // Function to determine if filters should be shown
+  const shouldShowFilters = () => {
+    return type === 'similar-song' || type === 'similar-artist';
+  };
+  
   // Theme-specific text colors
   const textColor = isDarkMode ? 'text-white' : 'text-gray-800';
   const errorColor = 'text-red-500';
@@ -175,6 +265,15 @@ export function SearchPage() {
         {loading && <p className={`${loadingColor} mt-4`}>Loading...</p>}
         {error && <p className={`${errorColor} mt-4`}>{error}</p>}
       </div>
+      
+      {/* Only show filters if results exist AND it's a similarity search */}
+      {results.length > 0 && shouldShowFilters() && (
+        <PopularitySlider 
+          popularityFilter={popularityFilter}
+          setPopularityFilter={setPopularityFilter}
+          onFilterChange={handlePopularityFilterChange}
+        />
+      )}
       
       {/* Results count */}
       {results.length > 0 && (
@@ -211,7 +310,7 @@ export function SearchPage() {
           {/* Items per page selector - right aligned */}
           <div className={`${isDarkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm rounded-xl p-3 shadow-lg`}>
             <label className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Items per page:
+              {type}s per page:
               <select 
                 value={itemsPerPage}
                 onChange={handleItemsPerPageChange}

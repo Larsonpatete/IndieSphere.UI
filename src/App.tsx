@@ -18,6 +18,7 @@ import { Footer } from './components/Footer';
 import { AboutPage } from './components/AboutPage';
 import { ThemeProvider } from './context/ThemeContext';
 import { NavbarWithLogo } from './components/NavbarWithLogo';
+import { SearchProvider } from './context/SearchContext';
 
 
 // Create a NavbarWithLogo component that has access to useNavigate
@@ -27,15 +28,16 @@ export default function App() {
     <ThemeProvider>
       <div className="background">
         <BrowserRouter>
-          <NavbarWithLogo />
-          <Routes>
-            <Route path="/" element={<SearchPage />} />
-            <Route path="/search/:type/:query" element={<SearchPage />} />
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/songdetails/:id" element={<SongDetails />} />
-            {/* Other routes... */}
-          </Routes>
-          <Footer />
+          <SearchProvider>
+            <NavbarWithLogo />
+            <Routes>
+              <Route path="/" element={<SearchPage />} />
+              <Route path="/search/:type/:query" element={<SearchPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/songdetails/:id" element={<SongDetails />} />
+            </Routes>
+            <Footer />
+          </SearchProvider>
         </BrowserRouter>
       </div>
     </ThemeProvider>

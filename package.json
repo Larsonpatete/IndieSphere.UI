@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@heroui/navbar": "^2.2.19",
     "@heroui/react": "^2.7.10",
     "@heroui/system": "^2.4.17",
