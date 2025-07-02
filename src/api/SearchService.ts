@@ -1,5 +1,4 @@
 import { ApiClient } from './ApiClient';
-import { Song } from '../domain/Song';
 
 export class SearchService extends ApiClient {
   async search(query: string, limit: number = 20, offset: number = 0, filters?: any): Promise<any> {
@@ -64,11 +63,13 @@ export class SearchService extends ApiClient {
     
     // Add filter parameters if they exist
     if (filters?.minPopularity) {
-      params.append('min_popularity', filters.minPopularity.toString());
+      params.append('minpopularity', filters.minPopularity.toString());
     }
     if (filters?.maxPopularity) {
-      params.append('max_popularity', filters.maxPopularity.toString());
+      params.append('maxpopularity', filters.maxPopularity.toString());
     }
+
+    console.log(`Searching similar songs with params: ${params.toString()}`);
     
     const response = await fetch(`${this.baseUrl}/search/similar-songs?${params.toString()}`);
     if (!response.ok) {

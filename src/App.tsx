@@ -31,10 +31,10 @@ export default function App() {
           <SearchProvider>
             <NavbarWithLogo />
             <Routes>
-              <Route path="/" element={<SearchPage />} />
+              <Route path="/song/:id" element={<SongDetails />} />
               <Route path="/search/:type/:query" element={<SearchPage />} />
               <Route path="/about" element={<AboutPage />} />
-              <Route path="/songdetails/:id" element={<SongDetails />} />
+              <Route path="/" element={<SearchPage />} />
             </Routes>
             <Footer />
           </SearchProvider>

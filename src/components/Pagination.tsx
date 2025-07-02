@@ -1,85 +1,110 @@
 import React from 'react';
+import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 
-interface PaginationProps {
+export interface PaginationProps {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
-  pageLimit?: number; // Optional parameter to control number of page buttons shown
+  pageLimit?: number;
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ 
-  currentPage, 
-  totalPages, 
-  onPageChange,
-  pageLimit = 5 // Default to 5 pages shown
-}) => {
+export function Pagination({ pageLimit = 7 }: PaginationProps) {
+  const { state, performSearch } = useSearch();
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   
+  const { currentPage, totalPages } = state;
+  
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    
+    // Calculate range to show
+    let startPage = Math.max(1, currentPage - Math.floor(pageLimit / 2));
+    let endPage = startPage + pageLimit - 1;
+    
+    if (endPage > totalPages) {
+      endPage = totalPages;
+      startPage = Math.max(1, endPage - pageLimit + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+      pageNumbers.push(i);
+    }
+    
+    return pageNumbers;
+  };
+  
   if (totalPages <= 1) return null;
-
+  
   return (
-    <div className="flex justify-center">
-      {/* Theme-based styling for the pagination card */}
-      <div className={`${isDarkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm rounded-xl p-4 shadow-lg`}>
-        <div className="flex items-center space-x-3">
-          {/* Previous page button */}
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-md text-2xl font-medium transition-colors ${
-              currentPage === 1
-                ? `text-gray-400 ${isDarkMode ? 'text-gray-500' : ''} cursor-not-allowed`
-                : `text-indie-purple hover:${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} hover:bg-opacity-70 hover:shadow-md`
-            }`}
-          >
-            ←
-          </button>
-
-          {/* Page numbers */}
-          {Array.from({ length: Math.min(pageLimit, totalPages) }, (_, i) => {
-            let pageNumber: number;
-            
-            if (totalPages <= pageLimit) {
-              pageNumber = i + 1;
-            } else if (currentPage <= Math.ceil(pageLimit / 2)) {
-              pageNumber = i + 1;
-            } else if (currentPage >= totalPages - Math.floor(pageLimit / 2)) {
-              pageNumber = totalPages - pageLimit + i + 1;
-            } else {
-              pageNumber = currentPage - Math.floor(pageLimit / 2) + i;
-            }
-            
-            return (
-              <button
-                key={pageNumber}
-                onClick={() => onPageChange(pageNumber)}
-                className={`px-3 py-1 rounded-md ${
-                  currentPage === pageNumber
-                    ? 'bg-indie-purple text-white'
-                    : `text-indie-purple hover:${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} hover:bg-opacity-70`
-                }`}
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
-
-          {/* Next page button */}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-md text-2xl font-medium transition-colors ${
-              currentPage === totalPages
-                ? `text-gray-400 ${isDarkMode ? 'text-gray-500' : ''} cursor-not-allowed`
-                : `text-indie-purple hover:${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'} hover:bg-opacity-70 hover:shadow-md`
-            }`}
-          >
-            →
-          </button>
-        </div>
-      </div>
+    <div className="flex items-center justify-center gap-1">
+      {/* First page button */}
+      <button
+        onClick={() => performSearch(state.query, state.type, 1, state.itemsPerPage, state.filters)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 rounded ${
+          currentPage === 1 
+            ? 'opacity-50 cursor-not-allowed' 
+            : 'hover:bg-indie-purple hover:text-white'
+        } ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+      >
+        &laquo;
+      </button>
+      
+      {/* Previous page button */}
+      <button
+        onClick={() => performSearch(state.query, state.type, currentPage - 1, state.itemsPerPage, state.filters)}
+        disabled={currentPage === 1}
+        className={`px-3 py-1 rounded ${
+          currentPage === 1 
+            ? 'opacity-50 cursor-not-allowed' 
+            : 'hover:bg-indie-purple hover:text-white'
+        } ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+      >
+        &lt;
+      </button>
+      
+      {/* Page numbers */}
+      {getPageNumbers().map(pageNum => (
+        <button
+          key={pageNum}
+          onClick={() => performSearch(state.query, state.type, pageNum, state.itemsPerPage, state.filters)}
+          className={`px-3 py-1 rounded ${
+            pageNum === currentPage
+              ? 'bg-indie-purple text-white'
+              : `${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} hover:bg-indie-purple hover:text-white`
+          }`}
+        >
+          {pageNum}
+        </button>
+      ))}
+      
+      {/* Next page button */}
+      <button
+        onClick={() => performSearch(state.query, state.type, currentPage + 1, state.itemsPerPage, state.filters)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 rounded ${
+          currentPage === totalPages 
+            ? 'opacity-50 cursor-not-allowed' 
+            : 'hover:bg-indie-purple hover:text-white'
+        } ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+      >
+        &gt;
+      </button>
+      
+      {/* Last page button */}
+      <button
+        onClick={() => performSearch(state.query, state.type, totalPages, state.itemsPerPage, state.filters)}
+        disabled={currentPage === totalPages}
+        className={`px-3 py-1 rounded ${
+          currentPage === totalPages 
+            ? 'opacity-50 cursor-not-allowed' 
+            : 'hover:bg-indie-purple hover:text-white'
+        } ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'}`}
+      >
+        &raquo;
+      </button>
     </div>
   );
-};
+}

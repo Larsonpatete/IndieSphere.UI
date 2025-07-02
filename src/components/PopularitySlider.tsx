@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { useSearch } from '../context/SearchContext';
 import { ChevronDownIcon, ChevronUpIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 
-// Update props interface to include min and max values
-interface PopularitySliderProps {
-  popularityFilter: [number, number];
-  setPopularityFilter: (value: [number, number]) => void;
-  onFilterChange: (minPopularity: number, maxPopularity: number) => void;
-}
-
-const PopularitySlider: React.FC<PopularitySliderProps> = ({ 
-  popularityFilter, 
-  setPopularityFilter, 
-  onFilterChange 
-}) => {
+export function PopularitySlider() {
+  const { state, performSearch } = useSearch();
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
   
@@ -21,11 +12,17 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Track both min and max values locally
-  const [localMinValue, setLocalMinValue] = useState(popularityFilter[0]);
-  const [localMaxValue, setLocalMaxValue] = useState(popularityFilter[1]);
+  const [localMinValue, setLocalMinValue] = useState(state.filters.popularityFilter[0]);
+  const [localMaxValue, setLocalMaxValue] = useState(state.filters.popularityFilter[1]);
   
   // Add debounce timer ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Update local state when context state changes
+  useEffect(() => {
+    setLocalMinValue(state.filters.popularityFilter[0]);
+    setLocalMaxValue(state.filters.popularityFilter[1]);
+  }, [state.filters.popularityFilter]);
   
   // Toggle panel expansion
   const togglePanel = () => {
@@ -42,20 +39,21 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
     // Update local state immediately for visual feedback
     setLocalMinValue(newMin);
     
-    // Update the actual filter value (for visual display)
-    setPopularityFilter([newMin, localMaxValue]);
-    
     // Debounce the API call
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
     
     debounceTimerRef.current = setTimeout(() => {
-      onFilterChange(newMin, localMaxValue);
-    }, 500);
+      // Update context state and trigger search
+      performSearch(state.query, state.type, state.currentPage, state.itemsPerPage, {
+        minPopularity: newMin,
+        maxPopularity: localMaxValue
+      });
+    }, 1000);
   };
   
-  // Handle max value change
+  // Handle max value change (similar to min)
   const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     
@@ -65,17 +63,18 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
     // Update local state immediately for visual feedback
     setLocalMaxValue(newMax);
     
-    // Update the actual filter value (for visual display)
-    setPopularityFilter([localMinValue, newMax]);
-    
     // Debounce the API call
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
     
     debounceTimerRef.current = setTimeout(() => {
-      onFilterChange(localMinValue, newMax);
-    }, 500);
+      // Update context state and trigger search
+      performSearch(state.query, state.type, state.currentPage, state.itemsPerPage, {
+        minPopularity: localMinValue,
+        maxPopularity: newMax
+      });
+    }, 1000);
   };
   
   // Clean up timer on unmount
@@ -87,8 +86,14 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
     };
   }, []);
   
-  // Is the filter active (not at default values)?
+  // Check if filter is active (not at default values)
   const isFilterActive = localMinValue > 0 || localMaxValue < 100;
+  
+  // Only render for search types that support popularity filtering
+  const supportedTypes = ['similar-song', 'similar-artist'];
+  if (!supportedTypes.includes(state.type)) {
+    return null;
+  }
   
   return (
     <div className={`${isDarkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm rounded-xl shadow-lg max-w-md mx-auto mb-6 transition-all duration-300`}>
@@ -129,7 +134,7 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
       <div className={`overflow-hidden transition-all duration-300 ${
         isExpanded ? 'max-h-80 opacity-100 p-4 pt-0' : 'max-h-0 opacity-0 p-0'
       }`}>
-        {/* Min value slider */}
+        {/* Min slider */}
         <div className="mb-4">
           <label className={`block ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             <div className="flex justify-between mb-1">
@@ -145,14 +150,10 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
               onChange={handleMinChange}
               className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indie-purple"
             />
-            <div className="flex justify-between text-xs mt-1">
-              <span>Underground</span>
-              <span>Popular</span>
-            </div>
           </label>
         </div>
         
-        {/* Max value slider */}
+        {/* Max slider */}
         <div>
           <label className={`block ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
             <div className="flex justify-between mb-1">
@@ -168,10 +169,6 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
               onChange={handleMaxChange}
               className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-indie-purple"
             />
-            <div className="flex justify-between text-xs mt-1">
-              <span>Underground</span>
-              <span>Popular</span>
-            </div>
           </label>
         </div>
         
@@ -182,8 +179,10 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
               e.stopPropagation(); // Prevent panel collapse
               setLocalMinValue(0);
               setLocalMaxValue(100);
-              setPopularityFilter([0, 100]);
-              onFilterChange(0, 100);
+              performSearch(state.query, state.type, state.currentPage, state.itemsPerPage, {
+                minPopularity: 0,
+                maxPopularity: 100
+              });
             }}
             className="mt-3 px-3 py-1 text-xs bg-indie-purple text-white rounded hover:bg-opacity-80 transition-colors"
           >
@@ -193,6 +192,4 @@ const PopularitySlider: React.FC<PopularitySliderProps> = ({
       </div>
     </div>
   );
-};
-
-export default PopularitySlider;
+}

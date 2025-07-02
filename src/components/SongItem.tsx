@@ -27,7 +27,7 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
 
   // Add navigation to song details
   const handleClick = () => {
-    navigate(`/songdetails/${song.id}`);
+    navigate(`/song/${song.id}`);
   };
 
   // Define the card style based on theme (if theme context is set up)
@@ -39,15 +39,9 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
   return (
     <div 
       className={`relative p-4 ${cardStyle} rounded-lg shadow-md hover:shadow-lg transition flex flex-col items-center max-h-lg max-w-xs cursor-pointer`}
-      style={{ minHeight: '200px' }}
-      onClick={handleClick}
-    >
+      style={{ minHeight: '200px' }} onClick={handleClick}>
       {song.albumImageUrl && (
-        <img
-          src={song.albumImageUrl}
-          alt={song.title}
-          className="h-70 object-cover rounded mb-2"
-        />
+        <img src={song.albumImageUrl} alt={song.title} className="h-70 object-cover rounded mb-2" />
       )}
       
       <h3 className="text-lg font-semibold truncate w-full text-center">
@@ -76,7 +70,7 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
         </a>
       </p>
 
-      {song.trackUrl && (
+      {/* {song.trackUrl && (
         <a
           href={song.trackUrl}
           target="_blank"
@@ -86,7 +80,7 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
         >
           View Track in Spotify
         </a>
-      )}
+      )} */}
       
       {/* Add release date */}
       {song.releaseDate && (

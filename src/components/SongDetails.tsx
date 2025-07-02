@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Song } from '../domain/Song';
 import { SearchService } from '../api/SearchService';
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
@@ -18,6 +18,10 @@ export const SongDetails: React.FC = () => {
   const { mapSong } = useSongMapper();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+
+  const location = useLocation(); // Add this
+
+  console.log('SongDetails rendering with path:', location.pathname, 'id:', id);
 
   useEffect(() => {
     const fetchSongDetails = async () => {

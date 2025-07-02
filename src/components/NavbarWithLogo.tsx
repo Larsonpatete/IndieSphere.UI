@@ -1,5 +1,6 @@
 import '../styles/SearchPage.css';
 import { useTheme } from '../context/ThemeContext';
+import { useSearch } from '../context/SearchContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import Globe from '../Assets/globe.svg'
 import { SearchBar } from '../components/SearchBar';
@@ -21,11 +22,14 @@ import React, { useCallback } from 'react';
 export const NavbarWithLogo = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
-  
+  const { resetSearchState } = useSearch();
+
+  // Handle logo click to reset search state and navigate home
   const handleLogoClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-    navigate('/', { state: { clearResults: true } });
-  }, [navigate]);
+
+    resetSearchState();
+  }, [resetSearchState]);
 
   return (
     <Navbar isBordered className={theme === 'light' ? 'bg-white bg-opacity-90' : 'bg-gray-900 bg-opacity-90'}>

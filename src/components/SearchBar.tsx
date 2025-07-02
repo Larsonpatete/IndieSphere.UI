@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext'; // Import theme context
+import { useSearch } from '../context/SearchContext';
+import { useTheme } from '../context/ThemeContext';
 
 type SearchType = 'song' | 'artist' | 'genre' | 'similar-song' | 'similar-artist';
 
@@ -9,28 +10,39 @@ interface SearchBarProps {
 }
 
 export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
+  const { state, performSearch } = useSearch();
   const { type, query } = useParams<{ type?: string; query?: string }>();
-  const [searchQuery, setSearchQuery] = useState(query ? decodeURIComponent(query) : '');
-  const [searchType, setSearchType] = useState<SearchType>(type as SearchType || 'song');
+  const [searchQuery, setSearchQueryState] = useState(query ? decodeURIComponent(query) : '');
+  const [searchType, setSearchTypeState] = useState<SearchType>(type as SearchType || 'song');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const { theme } = useTheme(); // Get current theme
   const isDark = theme === 'dark';
+
+  // Update local state when context state changes
+  useEffect(() => {
+    setSearchQueryState(state.query);
+    setSearchTypeState(state.type as SearchType);
+  }, [state.query, state.type]);
 
   // Update the handleSubmit function to not clear the search query
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       if (searchQuery.trim()) {
-        // Navigate to search route with query and type
-        navigate(`/search/${searchType}/${encodeURIComponent(searchQuery.trim())}`);
+        // Update context state
+        const searchUrl = `/search/${searchType}/${encodeURIComponent(searchQuery)}`;
+        navigate(searchUrl);
+
+        // Perform search with page 1
+        performSearch(searchQuery, searchType, 1);
       }
     },
-    [searchQuery, searchType, navigate]
+    [searchQuery, searchType, performSearch]
   );
 
   const handleSearchTypeChange = (type: SearchType) => {
-    setSearchType(type);
+    setSearchTypeState(type);
     setIsDropdownOpen(false);
   };
 
@@ -86,13 +98,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
             {searchTypeInfo[searchType].label}
-            <svg 
-              className="w-4 h-4 ml-2 inline-block" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24" 
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg className="w-4 h-4 ml-2 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -125,7 +131,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
           type="text"
           placeholder={`Search for a ${searchType.replace('-', ' ')}...`}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => setSearchQueryState(e.target.value)}
           className={`flex-grow ${height} px-4 py-2 ${isDark ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'} focus:outline-none focus:ring-2 focus:ring-${
             searchType === 'song' ? 'blue' : 
             searchType === 'artist' ? 'indie-purple' : 
@@ -139,19 +145,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({ height = 'h-14' }) => {
           type="submit"
           className={`${height} px-4 ${getSearchButtonColor()} text-white rounded-r-lg focus:outline-none focus:ring-2`}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </button>
       </div>
