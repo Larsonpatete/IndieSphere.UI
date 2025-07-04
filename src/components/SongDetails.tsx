@@ -19,9 +19,7 @@ export const SongDetails: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
-  const location = useLocation(); // Add this
-
-  console.log('SongDetails rendering with path:', location.pathname, 'id:', id);
+  const location = useLocation();
 
   useEffect(() => {
     const fetchSongDetails = async () => {
@@ -290,6 +288,20 @@ export const SongDetails: React.FC = () => {
             />
           </div>
         )}
+
+        {/* Spotify attribution footer */}
+        <div className="flex justify-end items-center mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 border-opacity-30">
+          <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mr-2`}>
+            Data provided by
+          </span>
+          <img 
+            src={SpotifyLogo} 
+            alt="Spotify" 
+            className={`h-6 ${spotifyLogoClass}`} 
+          />
+        </div>
+
+        {/* End of main card div */}
       </div>
     </div>
   );

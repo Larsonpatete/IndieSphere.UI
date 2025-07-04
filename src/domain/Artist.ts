@@ -1,5 +1,9 @@
 export interface Artist {
   id: string;
   name: string;
-  url?: string;  // Optional - not all sources provide this
+  url?: string;
+  genres?: string[];
+  images?: string[]; 
+  followers?: number;
+  popularity?: number;
 }

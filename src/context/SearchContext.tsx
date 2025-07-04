@@ -3,16 +3,19 @@ import React, { createContext, useState, useContext, useCallback, useReducer, us
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { Song } from '../domain/Song';
 import { SearchService } from '../api/SearchService';
+import { ArtistService } from '../api/ArtistService';
 import { useSongMapper } from '../hooks/useSongMapper';
-import { SearchType } from '../domain/SearchType';
+import { useArtistMapper } from '../hooks/useArtistMapper';
 
 const searchService = new SearchService();
+const artistService = new ArtistService();
+
 
 // Define the state shape
 interface SearchState {
   query: string;
   type: string; // TODO: change to SearchType
-  results: Song[];
+  results: any[]; // could be a Song[], Artist[], etc. depending on the type
   loading: boolean;
   error: string | null;
   currentPage: number;
@@ -107,6 +110,7 @@ export const SearchProvider: React.FC<React.PropsWithChildren<{}>> = ({ children
   const navigate = useNavigate();
   const location = useLocation();
   const { mapSong } = useSongMapper();
+  const { mapArtist } = useArtistMapper();
   
   // Extract URL parameters
   const params = useParams<{ type?: string; query?: string }>();
@@ -229,21 +233,26 @@ export const SearchProvider: React.FC<React.PropsWithChildren<{}>> = ({ children
       console.log(`Searching for: ${searchQuery} (Type: ${searchType}, Page: ${page}, Offset: ${offset}, Items: ${itemsPerPage}, Filters: ${JSON.stringify(apiFilters)})`);
       
       let response;
+      let itemList = [];
       switch (searchType) {
         case 'song':
           response = await searchService.search(searchQuery, itemsPerPage, offset, apiFilters);
+          itemList = response.results.map((item: any) => mapSong(item));
           break;
         case 'artist':
-          response = await searchService.searchArtists(searchQuery, itemsPerPage, offset, apiFilters);
+          response = await artistService.search(searchQuery, itemsPerPage, offset, apiFilters);
+          itemList = response.results.map((item: any) => mapArtist(item));
           break;
         case 'genre':
           response = await searchService.searchGenre(searchQuery, itemsPerPage, offset);
           break;
         case 'similar-song':
           response = await searchService.searchSimilarSongs(searchQuery, itemsPerPage, apiFilters);
+          itemList = response.results.map((item: any) => mapSong(item));
           break;
         case 'similar-artist':
-          response = await searchService.searchSimilarArtists(searchQuery, itemsPerPage, apiFilters);
+          response = await artistService.getSimilar(searchQuery, itemsPerPage, apiFilters);
+          itemList = response.results.map((item: any) => mapArtist(item));
           break;
         default:
           throw new Error(`Unknown search type: ${searchType}`);
@@ -260,10 +269,10 @@ export const SearchProvider: React.FC<React.PropsWithChildren<{}>> = ({ children
       });
 
       console.log('API response:', response);
+      console.log('Mapped items:', itemList);
 
-      const songs = response.results.map((item: any) => mapSong(item));
 
-      dispatch({ type: 'SET_RESULTS', payload: songs });
+      dispatch({ type: 'SET_RESULTS', payload: itemList });
     } catch (err) {
       console.error('Search error:', err);
       dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Unknown error' });
