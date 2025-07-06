@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
 import { Song } from '../domain/Song';
 import { SearchService } from '../api/SearchService';
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
@@ -118,7 +118,16 @@ export const SongDetails: React.FC = () => {
             </h1>
             
             <h2 className={`text-xl ${subheadingColor} mb-4`}>
-              By {(song.artist.name || 'Unknown Artist')}
+              By {song.artist?.id ? (
+    <Link 
+      to={`/artist/${song.artist.id}`} 
+      className={`${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'} hover:underline`}
+    >
+      {song.artist.name || 'Unknown Artist'}
+    </Link>
+  ) : (
+    song.artist?.name || 'Unknown Artist'
+  )}
             </h2>
             
             <p className={`mb-2 ${textColor}`}>
@@ -177,13 +186,16 @@ export const SongDetails: React.FC = () => {
           </div>
         )}
         
-        {/* Audio Features Section - only show if we have at least one feature */}
-        {(song.energy !== undefined || song.danceability !== undefined || 
-          song.acousticness !== undefined || song.tempo !== undefined) && (
+        {/* Audio Features Section - only show if we have at least one non-zero feature */}
+        {((song.energy !== undefined && song.energy > 0) || 
+          (song.danceability !== undefined && song.danceability > 0) || 
+          (song.acousticness !== undefined && song.acousticness > 0) || 
+          (song.tempo !== undefined && song.tempo > 0) ||
+          song.moodCategory) && (
           <div className="mb-8">
             <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>Audio Features</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {song.energy !== undefined && (
+              {song.energy !== undefined && song.energy > 0 && (
                 <div className={`${featureBgColor} p-4 rounded-lg`}>
                   <h4 className={`font-medium text-sm ${textColor} mb-1`}>Energy</h4>
                   <div className={`w-full ${progressBgColor} rounded-full h-2.5`}>
@@ -196,7 +208,7 @@ export const SongDetails: React.FC = () => {
                 </div>
               )}
               
-              {song.danceability !== undefined && (
+              {song.danceability !== undefined && song.danceability > 0 && (
                 <div className={`${featureBgColor} p-4 rounded-lg`}>
                   <h4 className={`font-medium text-sm ${textColor} mb-1`}>Danceability</h4>
                   <div className={`w-full ${progressBgColor} rounded-full h-2.5`}>
@@ -209,7 +221,7 @@ export const SongDetails: React.FC = () => {
                 </div>
               )}
               
-              {song.acousticness !== undefined && (
+              {song.acousticness !== undefined && song.acousticness > 0 && (
                 <div className={`${featureBgColor} p-4 rounded-lg`}>
                   <h4 className={`font-medium text-sm ${textColor} mb-1`}>Acousticness</h4>
                   <div className={`w-full ${progressBgColor} rounded-full h-2.5`}>
@@ -222,7 +234,7 @@ export const SongDetails: React.FC = () => {
                 </div>
               )}
               
-              {song.tempo !== undefined && (
+              {song.tempo !== undefined && song.tempo > 0 && (
                 <div className={`${featureBgColor} p-4 rounded-lg`}>
                   <h4 className={`font-medium text-sm ${textColor} mb-1`}>Tempo</h4>
                   <p className={`text-lg font-bold ${featureTextColor}`}>{Math.round(song.tempo)} BPM</p>
@@ -248,7 +260,23 @@ export const SongDetails: React.FC = () => {
               {song.popularity !== undefined && (
                 <div className={`${featureBgColor} p-4 rounded-lg`}>
                   <h4 className={`font-medium text-sm ${textColor} mb-1`}>Popularity</h4>
-                  <p className={`text-2xl font-bold ${featureTextColor}`}>{song.popularity}<span className="text-sm font-normal">/100</span></p>
+                  <div className="flex flex-col">
+                    <p className={`text-2xl font-bold ${featureTextColor}`}>
+                      {song.popularity}<span className="text-sm font-normal">/100</span>
+                    </p>
+                    <div className={`w-full ${progressBgColor} rounded-full h-2.5 mt-2`}>
+                      <div 
+                        className={`${
+                          song.popularity > 70 ? 'bg-green-600' :
+                          song.popularity > 40 ? 'bg-yellow-600' : 'bg-red-600'
+                        } h-2.5 rounded-full`}
+                        style={{ width: `${song.popularity}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
+                    From Spotify
+                  </p>
                 </div>
               )}
               

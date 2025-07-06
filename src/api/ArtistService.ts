@@ -22,10 +22,10 @@ export class ArtistService extends ApiClient {
     });
     
     if (filters?.minPopularity) {
-      params.append('min_popularity', filters.minPopularity.toString());
+      params.append('minpopularity', filters.minPopularity.toString());
     }
     if (filters?.maxPopularity) {
-      params.append('max_popularity', filters.maxPopularity.toString());
+      params.append('maxpopularity', filters.maxPopularity.toString());
     }
     
     return await this.get<any>(`/artists/similar?${params.toString()}`);

@@ -61,9 +61,17 @@ export function SongResults() {
                     {featuredSong.title}
                   </h2>
                 </Link>
-                <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                  {featuredSong.artist?.name || 'Unknown Artist'}
-                </p>
+                {featuredSong.artist?.id ? (
+                  <Link to={`/artist/${featuredSong.artist.id}`} className="hover:underline inline-block">
+                    <p className={`text-lg ${isDarkMode ? 'text-gray-300 hover:text-gray-200' : 'text-gray-700 hover:text-gray-900'}`}>
+                      {featuredSong.artist.name || 'Unknown Artist'}
+                    </p>
+                  </Link>
+                ) : (
+                  <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {featuredSong.artist?.name || 'Unknown Artist'}
+                  </p>
+                )}
                 {featuredSong.album && (
                   <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     Album: {featuredSong.album || 'Unknown Album'}
@@ -131,9 +139,17 @@ export function SongResults() {
                     {song.title}
                   </h4>
                 </Link>
-                <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {song.artist?.name || 'Unknown Artist'}
-                </p>
+                {song.artist?.id ? (
+                  <Link to={`/artist/${song.artist.id}`} className="hover:underline">
+                    <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'}`}>
+                      {song.artist.name || 'Unknown Artist'}
+                    </p>
+                  </Link>
+                ) : (
+                  <p className={`text-sm truncate ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {song.artist?.name || 'Unknown Artist'}
+                  </p>
+                )}
               </div>
               <div className={`text-xs ml-2 mt-8 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 {formatDuration(song.durationMs)}

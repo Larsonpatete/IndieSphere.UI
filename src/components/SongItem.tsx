@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import { Song } from '../domain/Song';
-import { useTheme } from '../context/ThemeContext'; // Import after you've set up theme context
+import { useTheme } from '../context/ThemeContext';
 
 interface SongItemProps {
   song: Song;
@@ -10,7 +10,7 @@ interface SongItemProps {
 
 export const SongItem: React.FC<SongItemProps> = ({ song }) => {
   const navigate = useNavigate();
-  const { theme } = useTheme(); // Use this after you've set up theme context
+  const { theme } = useTheme();
   
   // Helper function to format duration from milliseconds
   const formatDuration = (milliseconds: number): string => {
@@ -21,17 +21,12 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  useEffect(() => {
-    // console.log('SongItem rendered:', song.durationMs);
-  });
-
   // Add navigation to song details
   const handleClick = () => {
     navigate(`/song/${song.id}`);
   };
 
-  // Define the card style based on theme (if theme context is set up)
-  // If you haven't set up theme context yet, remove the conditional and just use the white style
+  // Define the card style based on theme
   const cardStyle = theme === 'dark' 
     ? "bg-gray-800 hover:bg-gray-700 text-white"
     : "bg-white hover:bg-gray-100 text-gray-800";
@@ -42,6 +37,13 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
       style={{ minHeight: '200px' }} onClick={handleClick}>
       {song.albumImageUrl && (
         <img src={song.albumImageUrl} alt={song.title} className="h-70 object-cover rounded mb-2" />
+      )}
+      
+      {/* Similarity Match Badge - Added floating badge */}
+      {song.SimilarSongMatch !== undefined && (
+        <div className="absolute top-2 right-2 bg-indigo-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-md">
+          {(song.SimilarSongMatch * 100).toFixed(0)}% Match
+        </div>
       )}
       
       <h3 className="text-lg font-semibold truncate w-full text-center">
@@ -60,53 +62,65 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
       )}
       
       <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'} truncate w-full text-center`}>
-        <a
-          href={song.artist.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-blue-500 hover:underline"
-        >
-          {song.artist.name}
-        </a>
+        {/* Artist link with improved click handling */}
+        {song.artist?.id ? (
+          <Link
+            to={`/artist/${song.artist.id}`}
+            className="text-blue-500 hover:underline"
+            onClick={(e) => {
+              e.stopPropagation();  // Stop click event from bubbling up to parent
+              e.preventDefault();   // Prevent default link behavior
+              navigate(`/artist/${song.artist.id}`); // Explicitly navigate to artist page
+            }}
+          >
+            {song.artist.name || 'Unknown Artist'}
+          </Link>
+        ) : (
+          song.artist?.name || 'Unknown Artist'
+        )}
       </p>
 
-      {/* {song.trackUrl && (
-        <a
-          href={song.trackUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-2 text-sm text-green-600 hover:underline"
-          onClick={(e) => e.stopPropagation()}
-        >
-          View Track in Spotify
-        </a>
-      )} */}
-      
+      {/* Popularity meter - new addition */}
+      {song.popularity !== undefined && (
+        <div className="mt-2 w-full px-2">
+          <div className="flex items-center justify-between text-xs mb-1">
+            <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Popularity</span>
+            <span className={
+              song.popularity > 70 ? 'text-green-500' : 
+              song.popularity > 40 ? 'text-yellow-500' : 'text-red-500'
+            }>{song.popularity}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div 
+              className={`${
+                song.popularity > 70 ? 'bg-green-500' : 
+                song.popularity > 40 ? 'bg-yellow-500' : 'bg-red-500'
+              } h-1.5 rounded-full`}
+              style={{ width: `${song.popularity}%` }}
+            ></div>
+          </div>
+        </div>
+      )}
+
       {/* Add release date */}
       {song.releaseDate && (
         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
           Released: {new Date(song.releaseDate).toLocaleDateString()}
         </p>
       )}
-
-      {song.SimilarSongMatch !== undefined && (
-        <p className={`text-s text-purple-500 mt-1`}>
-          Similarity Score: {song.SimilarSongMatch.toFixed(2)}  {/* Display similarity score if available */}
-        </p> 
-      )} 
       
       {/* Add duration - fixed for milliseconds */}
-      {song.durationMs !== 0 && (
+      {/* {song.durationMs !== 0 && (
         <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
           Duration: {formatDuration(song.durationMs)}
         </p>
-      )}
+      )} */}
       
       {/* Add Spotify logo - use white version for dark theme */}
       <img
         src={SpotifyLogo}
         alt="Spotify"
-        className={`w-12 h-12 absolute bottom-2 right-2 ${theme === 'dark' ? 'invert opacity-50' : 'opacity-80'} pointer-events-none`}
+        className={`w-12 h-12 absolute bottom-8 right-2 ${theme === 'dark' ? 'invert opacity-50' : 'opacity-80'} pointer-events-none`}
         style={{ zIndex: 1 }}
       />
     </div>

@@ -13,7 +13,7 @@ export function useArtistMapper() {
             images: data.images || [],
             followers: data.followers || undefined,
             popularity: data.popularity || undefined,
-
+            similArtistMatch: data.match || undefined
         };
     }
 
