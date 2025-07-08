@@ -72,9 +72,9 @@ export function SongResults() {
                     {featuredSong.artist?.name || 'Unknown Artist'}
                   </p>
                 )}
-                {featuredSong.album && (
+                {featuredSong.album.title && (
                   <p className={`text-sm mt-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                    Album: {featuredSong.album || 'Unknown Album'}
+                    Album: {featuredSong.album.title || 'Unknown Album'}
                   </p>
                 )}
               </div>
@@ -130,7 +130,7 @@ export function SongResults() {
               {/* Compact song card */}
               <img 
                 src={song.albumImageUrl || defaultAlbumImageUrl} 
-                alt={song.album || song.title} 
+                alt={song.album.title || song.title} 
                 className="w-12 h-12 object-cover rounded mr-3 flex-shrink-0"
               />
               <div className="min-w-0 flex-grow">

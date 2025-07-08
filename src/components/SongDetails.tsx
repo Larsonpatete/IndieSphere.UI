@@ -28,6 +28,7 @@ export const SongDetails: React.FC = () => {
       try {
         setLoading(true);
         const response = await searchService.getSongDetails(id);
+        // console.log('Fetched song details:', response);
         console.log('Song details response:', response.song);
         
         // Use the mapper to convert API response to a properly typed Song object
@@ -101,7 +102,7 @@ export const SongDetails: React.FC = () => {
           <div className="md:w-1/3">
             <img 
               src={song.albumImageUrl || defaultAlbumImageUrl} 
-              alt={song.album} 
+              alt={song.album.title} 
               className="rounded-lg shadow-lg w-full"
             />
           </div>
@@ -131,7 +132,7 @@ export const SongDetails: React.FC = () => {
             </h2>
             
             <p className={`mb-2 ${textColor}`}>
-              <span className="font-semibold">Album:</span> {song.album}
+              <span className="font-semibold">Album:</span> {song.album.title}
             </p>
             
             {song.releaseDate && (
@@ -317,6 +318,65 @@ export const SongDetails: React.FC = () => {
           </div>
         )}
 
+        {/* ADD THE "MORE FROM THIS ALBUM" SECTION HERE */}
+        {song.album?.songs && song.album.songs.length > 1 && (
+          <div className="mb-8">
+            <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>More from {song.album.title}</h3>
+            <div className={`${featureBgColor} rounded-lg p-2`}>
+              <ul>
+                {song.album.songs.map((albumSong, index) => {
+                    const isCurrentSong = albumSong.id === song.id;
+                    const currentSongStyles = isDark 
+                      ? 'bg-indigo-600 bg-opacity-30 font-semibold' 
+                      : 'bg-indigo-100 font-semibold';
+                    
+                    return (
+                      <li key={albumSong.id || index} className={`border-b ${isDark ? 'border-gray-700' : 'border-gray-200'} last:border-b-0`}>
+                        <Link 
+                          to={`/song/${albumSong.id}`} 
+                          className={`flex items-center justify-between p-3 rounded-md transition-colors ${isCurrentSong ? currentSongStyles : (isDark ? 'hover:bg-gray-600' : 'hover:bg-gray-200')}`}
+                        >
+                          <div className="flex items-center min-w-0">
+                            <span className={`mr-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{index + 1}</span>
+                            <span className={`truncate ${textColor}`}>{albumSong.title}</span>
+                          </div>
+                          <span className={`text-sm flex-shrink-0 ml-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDuration(albumSong.durationMs)}</span>
+                        </Link>
+                      </li>
+                    );
+                })}
+              </ul>
+            </div>
+          </div>
+        )}
+
+                {/* Similar Songs Section */}
+        {song.similarSongs && song.similarSongs.length > 0 && (
+          <div className="mb-8">
+            <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>You Might Also Like</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {song.similarSongs.map(similarSong => (
+                <Link 
+                  to={`/song/${similarSong.id}`} 
+                  key={similarSong.id}
+                  className={`flex items-center p-3 rounded-lg transition-colors ${featureBgColor} ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-200'}`}
+                >
+                  <img 
+                    src={similarSong.albumImageUrl || defaultAlbumImageUrl} 
+                    alt={similarSong.title}
+                    className="w-12 h-12 object-cover rounded-md mr-4 flex-shrink-0"
+                  />
+                  <div className="flex-grow min-w-0">
+                    <p className={`font-semibold truncate ${textColor}`}>{similarSong.title}</p>
+                    <p className={`text-sm truncate ${subheadingColor}`}>{similarSong.artist?.name || 'Unknown Artist'}</p>
+                  </div>
+                  <span className={`text-sm flex-shrink-0 ml-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{formatDuration(similarSong.durationMs)}</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        
         {/* Spotify attribution footer */}
         <div className="flex justify-end items-center mt-8 pt-4 border-t border-gray-200 dark:border-gray-700 border-opacity-30">
           <span className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mr-2`}>

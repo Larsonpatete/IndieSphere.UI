@@ -1,3 +1,4 @@
+import { Album } from "./Album";
 import { Artist } from "./Artist";
 import { Genre } from "./Genre";
 
@@ -5,7 +6,7 @@ export interface Song {
   id: string;
   title: string;
   artist: Artist;
-  album: string;
+  album: Album;
   albumImageUrl?: string;
   trackUrl?: string;
   genres: Genre[];
@@ -35,6 +36,7 @@ export interface Song {
   // Derived data
   obscurityRating?: number;
   moodCategory?: string;
+  similarSongs?: Song[]; // List of similar songs based on Last.fm or other sources
 
   isIndieLabelRelease?: boolean; // New field for indie label release
 }

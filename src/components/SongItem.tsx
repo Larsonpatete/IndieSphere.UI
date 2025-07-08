@@ -57,7 +57,7 @@ export const SongItem: React.FC<SongItemProps> = ({ song }) => {
       
       {song.album && (
         <h4 className={`text-md ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} truncate w-full text-center`}>
-          {song.album}
+          {song.album.title}
         </h4>
       )}
       

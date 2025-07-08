@@ -20,7 +20,19 @@ export function useSongMapper() {
         id: data.artist?.id || '',
         name: data.artist?.name || 'Unknown Artist',
       },
-      album: data.album || '',
+      album: {
+        id: data.album?.id || '',
+        title: data.album?.title || 'Unknown Album',
+        artist: {
+          id: data.album?.artist?.id || '',
+          name: data.album?.artist?.name || 'Unknown Artist',
+        },
+        releaseDate: data.album?.releaseDate || '',
+        coverImageUrl: data.album?.coverImageUrl || defaultAlbumImageUrl,
+        genre: data.album?.genre || 'Unknown Genre',
+        trackCount: data.album?.trackCount || 0,
+        songs: data.album?.songs || []
+      },
       albumImageUrl: data.albumImageUrl || defaultAlbumImageUrl,
       trackUrl: data.trackUrl,
       genres: Array.isArray(data.genres) 
@@ -51,6 +63,26 @@ export function useSongMapper() {
       // Derived data - optional
       obscurityRating: typeof data.obscurityRating === 'number' ? data.obscurityRating : undefined,
       moodCategory: data.moodCategory,
+      similarSongs: Array.isArray(data.similarSongs) 
+        ? data.similarSongs.map((s: any) => ({
+            id: s.id || '',
+            title: s.title || '',
+            artist: {
+              id: s.artist?.id || '',
+              name: s.artist?.name || 'Unknown Artist'
+            },
+            album: {
+              id: s.album?.id || '',
+              title: s.album?.title || 'Unknown Album'
+            },
+            albumImageUrl: s.albumImageUrl || defaultAlbumImageUrl,
+            trackUrl: s.trackUrl,
+            genres: Array.isArray(s.genres) ? s.genres.map((g: any) => ({ name: g.name })) : [],
+            isExplicit: Boolean(s.isExplicit),
+            durationMs: Number(s.durationMs) || 0,
+            popularity: typeof s.popularity === 'number' ? s.popularity : 0
+          }))
+        : [],
       
       // Indie-specific
       isIndieLabelRelease: Boolean(data.isIndieLabelRelease)
@@ -69,7 +101,10 @@ export function useSongMapper() {
       id: '', 
       name: 'Unknown Artist'
     },
-    album: '',
+    album: {
+      id: '',
+      title: 'Unknown Album',
+    },
     albumImageUrl: defaultAlbumImageUrl,
     trackUrl: undefined,
     genres: [],
