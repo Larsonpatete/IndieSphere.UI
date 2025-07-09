@@ -1,5 +1,3 @@
-// filepath: c:\Users\Larson Patete\source\repos\TypeScriptFun\IndieSphere.UI\src\components\search\SimilarSongResults.tsx
-import React from 'react';
 import { useSearch } from '../../context/SearchContext';
 import { useTheme } from '../../context/ThemeContext';
 import { SongItem } from '../SongItem';

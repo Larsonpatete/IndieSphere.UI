@@ -45,4 +45,12 @@ export class SearchService extends ApiClient {
 
     return await this.get<any>(`/songs/similar-songs?${params.toString()}`);
   }
+
+  async getTopSongsByCountry(countryCode: string, limit: number = 10): Promise<any> {
+    const params = new URLSearchParams({
+      country: countryCode,
+      limit: limit.toString(),
+    });
+    return await this.get<any>(`/songs/top-songs-by-country?${params.toString()}`);
+  }
 }

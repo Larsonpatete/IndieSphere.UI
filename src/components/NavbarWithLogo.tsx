@@ -57,6 +57,14 @@ export const NavbarWithLogo = () => {
               About
             </Link>
           </NavbarItem>
+          <NavbarItem>
+            <Link 
+              to="/discover" 
+              className={`${theme === 'light' ? 'text-gray-800' : 'text-white'} ${theme === 'light' ? 'hover:text-purple-700' : 'hover:text-purple-400'}`}
+            >
+              Discover
+            </Link>
+          </NavbarItem>
           {/* Other navbar items */}
         </NavbarContent>
       </NavbarContent>
