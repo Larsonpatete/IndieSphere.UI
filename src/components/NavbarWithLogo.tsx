@@ -2,6 +2,7 @@ import '../styles/SearchPage.css';
 import { useTheme } from '../context/ThemeContext';
 import { useSearch } from '../context/SearchContext';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { AuthButton } from '../components/Auth/AuthButtons'; // Add this import
 import Globe from '../Assets/globe.svg'
 import { SearchBar } from '../components/SearchBar';
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
@@ -69,7 +70,10 @@ export const NavbarWithLogo = () => {
         </NavbarContent>
       </NavbarContent>
       <NavbarContent as="div" className="items-center" justify="end">
-        <SearchBar height='h-12'/>
+        {/* <SearchBar height='h-12'/> */}
+        <div className="ml-4">
+          <AuthButton /> {/* Add the AuthButton component */}
+        </div>
         <div className="ml-4">
           <ThemeToggle />
         </div>

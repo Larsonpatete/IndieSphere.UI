@@ -6,7 +6,15 @@ export class ApiClient {
   }
 
   protected async get<T>(path: string): Promise<T> {
-    const response = await fetch(`${this.baseUrl}${path}`);
+    const response = await fetch(`${this.baseUrl}${path}`, {
+      method: 'GET',
+      // This is the critical part - include cookies with the request
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
     if (!response.ok) throw new Error("API request failed");
     return response.json();
   }
