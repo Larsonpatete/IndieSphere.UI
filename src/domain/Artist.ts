@@ -7,4 +7,9 @@ export interface Artist {
   followers?: number;
   popularity?: number;
   similArtistMatch?: number; // Similarity score with another artist
+  lastFmTags?: string[];
+  biography?: string;
+  similarArtists?: Artist[];
+  topTracks?: any[];
+  topAlbums?: any[];
 }

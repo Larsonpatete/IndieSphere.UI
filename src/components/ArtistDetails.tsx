@@ -7,14 +7,15 @@ import { ArtistService } from '../api/ArtistService';
 import { useArtistMapper } from '../hooks/useArtistMapper';
 
 // Extended artist interface with Last.fm data
-interface ExtendedArtist extends Artist {
-  biography?: string;
-  followers?: number;
-  popularity?: number;
-  similarArtists?: Artist[];
-  topTracks?: any[];
-  lastFmTags?: string[];
-}
+// interface ExtendedArtist extends Artist {
+//   biography?: string;
+//   followers?: number;
+//   popularity?: number;
+//   similarArtists?: Artist[];
+//   topTracks?: any[];
+//   lastFmTags?: string[];
+// }
+
 
 export function ArtistDetails() {
   const { id } = useParams<{ id: string }>();
@@ -23,7 +24,7 @@ export function ArtistDetails() {
   const { mapArtist } = useArtistMapper();
   const navigate = useNavigate();
   
-  const [artist, setArtist] = useState<ExtendedArtist | null>(null);
+  const [artist, setArtist] = useState<Artist | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const artistService = new ArtistService();
@@ -38,7 +39,7 @@ export function ArtistDetails() {
         console.log('Raw artist details:', data);
         
         // Use the mapper to transform the API response
-        const mappedArtist = mapArtist(data) as ExtendedArtist;
+        const mappedArtist = mapArtist(data);
         console.log('Mapped artist details:', mappedArtist);
         
         setArtist(mappedArtist);
@@ -267,7 +268,7 @@ export function ArtistDetails() {
                       {track.album}
                     </div>
                   </div>
-                  {track.popularity && (
+                  {/* {track.popularity && (
                     <div className={`text-sm flex items-center ${textColor}`}>
                       <div className={`w-16 ${progressBgColor} rounded-full h-1.5 mr-2`}>
                         <div 
@@ -277,12 +278,40 @@ export function ArtistDetails() {
                       </div>
                       <span>{track.popularity}/100</span>
                     </div>
-                  )}
+                  )} */}
                 </Link>
               ))}
             </div>
           </div>
         )}
+        
+        {/* Top albums section */}
+        {/* {artist.topAlbums && artist.topAlbums.length > 0 && (
+          <div className="mb-8">
+            <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>Top Albums</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {artist.topAlbums.map((album, index) => (
+                <a
+                  key={album.id || `album-${index}`}
+                  href={album.url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${featureBgColor} p-3 rounded-lg flex flex-col items-center hover:opacity-90 transition-colors`}
+                >
+                  <img
+                    src={album.image || 'https://via.placeholder.com/150?text=No+Image'}
+                    alt={album.title}
+                    className="w-24 h-24 object-cover rounded-md mb-2 shadow"
+                  />
+                  <div className={`font-medium text-center ${featureTextColor}`}>{album.title}</div>
+                  {album.releaseDate && (
+                    <div className={`text-xs mt-1 ${subheadingColor}`}>{album.releaseDate}</div>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        )} */}
         
         {/* Spotify attribution at the bottom */}
         <div className="flex justify-end items-center mt-8 pt-4 border-t border-gray-700 border-opacity-30">

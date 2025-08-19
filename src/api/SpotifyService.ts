@@ -5,7 +5,6 @@ export interface SpotifyUser {
   name: string; // maps to displayName
   email: string;
   profileUrl: string; // maps to externalUrls.spotify
-  accessToken: string;
   // You might want to add these:
   country?: string;
   images?: {height: number, width: number, url: string}[];
@@ -14,9 +13,11 @@ export interface SpotifyUser {
 
 export class SpotifyService extends ApiClient {
   private readonly storageKey = 'spotify_auth_state';
+  private readonly tokenKey = 'auth_token';
   
   constructor() {
-    super('https://5a9d20842cbb.ngrok-free.app/api');
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://d1679d0ad822.ngrok-free.app/api';
+    super(apiUrl);
   }
   
   async search(query: string) {
@@ -30,7 +31,8 @@ export class SpotifyService extends ApiClient {
   login(returnUrl: string = window.location.href) {
     // Store the current URL for post-login redirect
     localStorage.setItem(this.storageKey, JSON.stringify({ returnUrl }));
-    
+    console.log(`Redirecting to Spotify login: ${this.baseUrl}/spotify/login?returnUrl=${encodeURIComponent(returnUrl)}`);
+
     // Redirect to the backend login endpoint
     window.location.href = `${this.baseUrl}/spotify/login?returnUrl=${encodeURIComponent(returnUrl)}`;
   }
@@ -40,6 +42,7 @@ export class SpotifyService extends ApiClient {
    */
   logout() {
     localStorage.removeItem(this.storageKey);
+    localStorage.removeItem(this.tokenKey); // Remove the token on logout
     window.location.href = `${this.baseUrl}/spotify/logout`;
   }
 
@@ -47,49 +50,38 @@ export class SpotifyService extends ApiClient {
    * Checks if the user is logged in by attempting to fetch their profile
    * @returns The user object if authenticated, null otherwise
    */
-  async getCurrentUser(): Promise<SpotifyUser | null> {
-    try {
-      // Use fetch directly for debugging
-      const response = await fetch(`${this.baseUrl}/spotify/me`, {
-        credentials: 'include'
-      });
-      
-      console.log('Auth response status:', response.status);
-      const text = await response.text();
-      console.log('Auth response body:', text);
-      
-      // Try to parse as JSON if possible
-      try {
-        return JSON.parse(text);
-      } catch (e) {
-        console.error('Failed to parse response as JSON:', e);
-        return null;
-      }
-    } catch (error) {
-      console.error('Auth request failed:', error);
-      return null;
-    }
+async getCurrentUser(): Promise<SpotifyUser | null> {
+  try {
+    // The API client already parses JSON
+    return await this.get<SpotifyUser>('/spotify/me');
+  } catch (error) {
+    console.error('Auth request failed:', error);
+    return null;
   }
+}
 
   /**
-   * Handles the login success redirect
-   * Useful to call on your login-success page
+   * Handles storing the token and determining the redirect URL.
+   * It NO LONGER performs the redirect itself.
    */
-  handleLoginSuccess() {
-    const storedState = localStorage.getItem(this.storageKey);
+  handleLoginSuccess(token?: string): string {
+    // Store the token if provided
+    if (token) {
+      localStorage.setItem(this.tokenKey, token);
+    }
     
+    const storedState = localStorage.getItem(this.storageKey);
     if (storedState) {
       try {
         const { returnUrl } = JSON.parse(storedState);
         localStorage.removeItem(this.storageKey);
-        
-        // Don't redirect if we're already on the return URL
-        if (returnUrl && window.location.href !== returnUrl) {
-          window.location.href = returnUrl;
-        }
+        // Return the URL for the component to handle navigation
+        return returnUrl;
       } catch (e) {
         console.error('Error parsing stored auth state', e);
       }
     }
+    // Return a default fallback URL
+    return '/';
   }
 }

@@ -23,6 +23,7 @@ import { ArtistDetails } from './components/ArtistDetails';
 import { DiscoverPage } from './pages/DiscoveryPage';
 import { AuthProvider } from './context/AuthContext';
 import { LoginSuccessPage } from './pages/LoginSuccessPage';
+import { CountrySongsPage } from './components/Discovery/CountrySongsPage';
 
 
 // Create a NavbarWithLogo component that has access to useNavigate
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="/song/:id" element={<SongDetails />} />
               <Route path="/artist/:id" element={<ArtistDetails />} />
               <Route path="/search/:type/:query" element={<SearchPage />} />
+              <Route path="/country/:code" element={<CountrySongsPage />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/login-success" element={<LoginSuccessPage />} />

@@ -4,11 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { SpotifyService } from '../../api/SpotifyService';
 import { Button, Avatar, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@heroui/react";
 import { useTheme } from '../../context/ThemeContext';
+import defaultAvatar from '../../Assets/defaultAlbum.svg'; // Import the default avatar
 
 const spotifyService = new SpotifyService();
 
 export const AuthButton: React.FC = () => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, logout } = useAuth();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
 
@@ -26,23 +27,18 @@ export const AuthButton: React.FC = () => {
   }
 
   if (user) {
+    // Determine the image source, using the default avatar as a fallback
+    const imageUrl = user.profileUrl || defaultAvatar;
+
     return (
       <Dropdown placement="bottom-end">
         <DropdownTrigger>
           <div className="flex items-center cursor-pointer">
-            {user?.images?.[0] ? (
-              <img 
-                src={user.images[0].url} 
-                alt={user.name} 
-                className="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm" 
-              />
-            ) : (
-              <Avatar
-                name={user.name?.charAt(0) || "U"}
-                size="lg"
-                className="bg-indie-purple text-white"
-              />
-            )}
+            <img 
+              src={imageUrl} 
+              alt={user.name || 'User Avatar'} 
+              className="w-12 h-12 rounded-full border-2 border-gray-200 shadow-sm object-cover" 
+            />
             <span className="ml-3 mr-2 hidden md:inline font-medium">
               {user.name}
             </span>
@@ -62,7 +58,7 @@ export const AuthButton: React.FC = () => {
           <DropdownItem 
             key="logout" 
             color="danger" 
-            onClick={() => spotifyService.logout()}
+            onClick={logout}
             className={`rounded-md ${isDark ? 'text-red-400 hover:bg-gray-700' : 'text-red-600 hover:bg-gray-100'}`}
           >
             Log Out

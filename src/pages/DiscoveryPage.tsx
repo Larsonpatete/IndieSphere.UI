@@ -4,13 +4,13 @@ import { useTheme } from '../context/ThemeContext';
 import { SearchService } from '../api/SearchService';
 import { Song } from '../domain/Song';
 import { useSongMapper } from '../hooks/useSongMapper';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SpotifyLogo from '../Assets/Full_Logo_Black_CMYK.svg';
 import defaultAlbumImageUrl from '../Assets/defaultAlbum.svg';
-import GlobeContainer, { GlobeContainerRef } from '../components/GlobeContainer';
+import GlobeContainer, { GlobeContainerRef } from '../components/Discovery/GlobeContainer';
 
 // Memoize the Globe component
-const MemoizedGlobe = memo(Globe);
+// const MemoizedGlobe = memo(Globe);
 
 const searchService = new SearchService();
 
@@ -18,6 +18,7 @@ export const DiscoverPage: React.FC = () => {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const globeContainerRef = useRef<GlobeContainerRef | null>(null);
+  const navigate = useNavigate();
   
   const [topSongs, setTopSongs] = useState<Song[]>([]);
   const [selectedCountry, setSelectedCountry] = useState<{ name: string; code: string } | null>(null);
@@ -27,31 +28,11 @@ export const DiscoverPage: React.FC = () => {
   const { mapSong } = useSongMapper();
   
   // Handle country selection
-  const handleCountryClick = useCallback(async (polygon: any) => {
-    const countryName = polygon.properties.NAME;
+  const handleCountryClick = useCallback((polygon: any) => {
     const countryCode = polygon.properties.ISO_A2;
-    
-    // Highlight the country using the globe container's methods
-    if (globeContainerRef.current) {
-      globeContainerRef.current.highlightCountry(polygon);
-    }
-    
-    setSelectedCountry({ name: countryName, code: countryCode });
-    setIsLoading(true);
-    setError(null);
-    setTopSongs([]);
-    
-    try {
-      const response = await searchService.getTopSongsByCountry(countryName);
-      const mappedSongs = response.results.map(mapSong);
-      setTopSongs(mappedSongs);
-    } catch (err) {
-      console.error(`Failed to fetch songs for ${countryName}`, err);
-      setError(`Could not find top songs for ${countryName}. Please try another country.`);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [mapSong]);
+    // Navigate to the country songs page
+    navigate(`/country/${countryCode}`);
+  }, [navigate]);
   
   // UI theming
   const panelBg = isDark ? 'bg-gray-900 bg-opacity-70' : 'bg-white bg-opacity-80';
