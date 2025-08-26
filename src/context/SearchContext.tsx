@@ -119,53 +119,25 @@ export const SearchProvider: React.FC<React.PropsWithChildren<{}>> = ({ children
   
   // Initialize state from URL
   useEffect(() => {
-  // Skip if we've already initialized
-  if (initializedRef.current) return;
-  
-  // Get the current URL path directly
-  const currentPath = window.location.pathname;
-  console.log('Current path:', currentPath);
-  
-  // Check if we're on a search page
-  const searchPattern = /\/search\/([^\/]+)\/([^?]+)/;
-  const match = currentPath.match(searchPattern);
-  
-  if (match) {
-    // We have a search URL - extract type and query
-    const type = match[1];
-    const query = decodeURIComponent(match[2]);
-    
-    console.log('Found search parameters in URL:', { type, query });
-    
-    // Get any query string parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const page = parseInt(urlParams.get('page') || '1');
-    const perPage = parseInt(urlParams.get('perPage') || '20');
-    
-    // Mark as initialized to prevent running again
-    initializedRef.current = true;
-    
-    // Update state
-    dispatch({ type: 'SET_QUERY', payload: query });
-    dispatch({ type: 'SET_TYPE', payload: type });
-    dispatch({ 
-      type: 'SET_PAGINATION', 
-      payload: { 
-        currentPage: page,
-        totalPages: 1,
-        totalCount: 0
-      } 
-    });
-    
-    // Show loading state
-    dispatch({ type: 'SET_LOADING', payload: true });
-    
-    // Perform search with slight delay to ensure state is updated
-    setTimeout(() => {
-      performSearch(query, type, page, perPage);
-    }, 10);
-  }
-}, []); // Empty dependency array - only runs once on mount
+    const searchPattern = /\/search\/([^\/]+)\/([^?]+)/;
+    const match = location.pathname.match(searchPattern);
+
+    if (match) {
+        const type = match[1];
+        const query = decodeURIComponent(match[2]);
+
+        // If the new search is the same as the one we have, do nothing.
+        if (type === state.type && query === state.query && !state.loading && state.results.length > 0) {
+            return;
+        }
+
+        const urlParams = new URLSearchParams(location.search);
+        const page = parseInt(urlParams.get('page') || '1');
+        const perPage = parseInt(urlParams.get('perPage') || '20');
+
+        performSearch(query, type, page, perPage);
+    }
+}, [location.pathname, location.search]); // Re-run when URL changes
   
   // Perform search without filters
   const performSearch = useCallback(async (
@@ -275,7 +247,11 @@ export const SearchProvider: React.FC<React.PropsWithChildren<{}>> = ({ children
       dispatch({ type: 'SET_RESULTS', payload: itemList });
     } catch (err) {
       console.error('Search error:', err);
-      dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Unknown error' });
+      if (searchType === 'similar-song') {
+        dispatch({ type: 'SET_ERROR', payload: 'Must format song as [song] by [artist]' });
+      } else {
+        dispatch({ type: 'SET_ERROR', payload: err instanceof Error ? err.message : 'Unknown error' });
+      }
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }

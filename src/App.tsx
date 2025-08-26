@@ -24,6 +24,7 @@ import { DiscoverPage } from './pages/DiscoveryPage';
 import { AuthProvider } from './context/AuthContext';
 import { LoginSuccessPage } from './pages/LoginSuccessPage';
 import { CountrySongsPage } from './components/Discovery/CountrySongsPage';
+import RecomendationsPage from './pages/RecomendationsPage';
 
 
 // Create a NavbarWithLogo component that has access to useNavigate
@@ -44,6 +45,7 @@ export default function App() {
               <Route path="/about" element={<AboutPage />} />
               <Route path="/discover" element={<DiscoverPage />} />
               <Route path="/login-success" element={<LoginSuccessPage />} />
+              <Route path="/recomendations" element={<RecomendationsPage />} />
               <Route path="/" element={<SearchPage />} />
             </Routes>
             <Footer />

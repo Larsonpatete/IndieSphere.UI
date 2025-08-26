@@ -1,4 +1,7 @@
 import { ApiClient } from './ApiClient';
+import { Song } from '../domain/Song';
+import { Artist } from '../domain/Artist';
+import { mapFromSpotifySong } from '../mappers/spotifyMappers';
 
 export interface SpotifyUser {
   id: string;
@@ -11,12 +14,17 @@ export interface SpotifyUser {
   product?: string; // "premium" or "free"
 }
 
+export interface TopStatsResponse {
+  topTracks: Song[];
+  topArtists: Artist[];
+}
+
 export class SpotifyService extends ApiClient {
   private readonly storageKey = 'spotify_auth_state';
   private readonly tokenKey = 'auth_token';
   
   constructor() {
-    const apiUrl = process.env.REACT_APP_API_URL || 'https://d1679d0ad822.ngrok-free.app/api';
+    const apiUrl = process.env.REACT_APP_API_URL || 'https://ea91d212a707.ngrok-free.app/api';
     super(apiUrl);
   }
   
@@ -24,7 +32,7 @@ export class SpotifyService extends ApiClient {
     return await this.get<any[]>(`/spotify/search?query=${encodeURIComponent(query)}`);
   }
 
-  /**
+  /*
    * Initiates the Spotify OAuth login flow
    * @param returnUrl Optional URL to return to after successful login
    */
@@ -59,6 +67,14 @@ async getCurrentUser(): Promise<SpotifyUser | null> {
     return null;
   }
 }
+
+  async getTopStats(): Promise<TopStatsResponse> {
+    const response = await this.get<any>('/spotify/top-stats');
+    return {
+        topTracks: response.topTracks.map(mapFromSpotifySong),
+        topArtists: response.topArtists
+    };
+  }
 
   /**
    * Handles storing the token and determining the redirect URL.
