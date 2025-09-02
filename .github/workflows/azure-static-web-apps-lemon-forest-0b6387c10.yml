@@ -34,6 +34,7 @@ jobs:
           ###### End of Repository/Build Configurations ######
         env:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
+          CI: false
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
@@ -46,3 +47,4 @@ jobs:
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_LEMON_FOREST_0B6387C10 }}
           action: "close"
+
