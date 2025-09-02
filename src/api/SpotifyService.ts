@@ -8,7 +8,6 @@ export interface SpotifyUser {
   name: string; // maps to displayName
   email: string;
   profileUrl: string; // maps to externalUrls.spotify
-  // You might want to add these:
   country?: string;
   images?: {height: number, width: number, url: string}[];
   product?: string; // "premium" or "free"
