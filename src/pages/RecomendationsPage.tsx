@@ -73,7 +73,7 @@ const RecomendationsPage: React.FC = () => {
 
     return (
         <div className={`flex-grow ${textColor}`}>
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <h1 className="text-3xl font-bold mb-4 text-center">Recomendations</h1>
                 {!user && !loading && (
                     <div className="text-center">

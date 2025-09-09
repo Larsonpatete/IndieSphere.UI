@@ -16,19 +16,19 @@ export function SearchPage() {
 
   return (
     <div className="min-h-screen mb-16">
-      <div className={`flex flex-col items-center mb-16 transition-all duration-500${state.results.length > 0 ? "" : " mt-32"}`}>
-        <div className="relative flex justify-center items-center mb-16" style={{ height: '120px' }}>
+      <div className={`flex flex-col items-center mb-8 sm:mb-16 transition-all duration-500${state.results.length > 0 ? "" : " mt-16 sm:mt-32"}`}>
+        <div className="relative flex justify-center items-center mb-8 sm:mb-16" style={{ height: 'auto' }}>
           <img
             src={Globe}
             alt="Globe"
-            className="absolute inset-0 w-40 h-40 mx-auto pointer-events-none"
+            className="absolute inset-0 w-24 h-24 sm:w-40 sm:h-40 mx-auto pointer-events-none"
             style={{ zIndex: 0 }}
           />
-          <h1 className="text-7xl font-extrabold tracking-tight drop-shadow-lg text-indie-purple">
+          <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight drop-shadow-lg text-indie-purple" style={{ zIndex: 1 }}>
             Indie Sphere
           </h1>
         </div>
-        <div className="flex justify-center w-full mb-4">
+        <div className="flex justify-center w-full px-4 sm:px-0 mb-4">
           <div className="w-full md:w-1/2">
             <SearchBar />
           </div>

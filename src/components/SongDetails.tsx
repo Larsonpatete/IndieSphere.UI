@@ -85,19 +85,19 @@ export const SongDetails: React.FC = () => {
   const spotifyLogoClass = isDark ? '' : 'invert';
 
   return (
-    <div className="min-h-screen py-8 px-4">
+    <div className="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
       {/* Semi-transparent card that lets the background show through */}
-      <div className={`max-w-5xl mx-auto ${cardBgColor} backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden p-6`}>
+      <div className={`max-w-5xl mx-auto ${cardBgColor} backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden p-4 sm:p-6`}>
         {/* Navigation */}
         <button 
           onClick={() => navigate(-1)}
-          className={`mb-6 flex items-center ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
+          className={`mb-4 sm:mb-6 flex items-center ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
         >
           ← Back
         </button>
         
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row gap-8 mb-10">
+        <div className="flex flex-col md:flex-row gap-6 sm:gap-8 mb-8 sm:mb-10">
           {/* Album Art */}
           <div className="md:w-1/3">
             <img 

@@ -11,6 +11,9 @@ import {
   NavbarBrand,
   NavbarContent,
   NavbarItem,
+  NavbarMenuToggle,
+  NavbarMenu,
+  NavbarMenuItem,
   Input,
   DropdownItem,
   DropdownTrigger,
@@ -18,31 +21,43 @@ import {
   DropdownMenu,
   Avatar,
 } from "@heroui/react";
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 export const NavbarWithLogo = () => {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { resetSearchState } = useSearch();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Handle logo click to reset search state and navigate home
   const handleLogoClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
-
     resetSearchState();
-  }, [resetSearchState]);
+    navigate('/');
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+    }
+  }, [resetSearchState, navigate, isMenuOpen]);
+
+  const handleLinkClick = (path: string) => {
+    navigate(path);
+    setIsMenuOpen(false);
+  };
 
   return (
-    <Navbar isBordered className={theme === 'light' ? 'bg-white bg-opacity-90' : 'bg-gray-900 bg-opacity-90'}>
+    <Navbar isBordered isMenuOpen={isMenuOpen} onMenuOpenChange={setIsMenuOpen} className={theme === 'light' ? 'bg-white bg-opacity-90' : 'bg-gray-900 bg-opacity-90'}>
       <NavbarContent justify="start">
+        <NavbarMenuToggle
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          className={`sm:hidden ${theme === 'light' ? 'text-gray-800' : 'text-white'}`}
+        />
         <NavbarBrand className="mr-4">
           <a 
             href="/" 
             onClick={handleLogoClick}
             className="flex items-center gap-2 no-underline"
           >
-            <img src={Globe} className="h-16" alt="Indie Sphere" />
-            {/* Remove text-inherit so it doesn't inherit the parent text color */}
+            <img src={Globe} className="h-12 sm:h-16" alt="Indie Sphere" />
             <p className="hidden sm:block font-bold text-indie-purple text-xl">
               Indie Sphere
             </p>
@@ -50,7 +65,6 @@ export const NavbarWithLogo = () => {
         </NavbarBrand>
         <NavbarContent className="hidden sm:flex gap-9">
           <NavbarItem>
-            {/* Add explicit text color for each theme instead of text-inherit */}
             <Link 
               to="/about" 
               className={`${theme === 'light' ? 'text-gray-800' : 'text-white'} ${theme === 'light' ? 'hover:text-purple-700' : 'hover:text-purple-400'}`}
@@ -58,14 +72,6 @@ export const NavbarWithLogo = () => {
               About
             </Link>
           </NavbarItem>
-          {/* <NavbarItem>
-            <Link 
-              to="/discover" 
-              className={`${theme === 'light' ? 'text-gray-800' : 'text-white'} ${theme === 'light' ? 'hover:text-purple-700' : 'hover:text-purple-400'}`}
-            >
-              Discover
-            </Link>
-          </NavbarItem> */}
           <NavbarItem>
             <Link 
               to="/recomendations" 
@@ -74,18 +80,34 @@ export const NavbarWithLogo = () => {
               Recomendations
             </Link>
           </NavbarItem>
-          {/* Other navbar items */}
         </NavbarContent>
       </NavbarContent>
       <NavbarContent as="div" className="items-center" justify="end">
-        {/* <SearchBar height='h-12'/> */}
-        <div className="ml-4">
-          <AuthButton /> {/* Add the AuthButton component */}
-        </div>
-        <div className="ml-4">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <AuthButton />
           <ThemeToggle />
         </div>
       </NavbarContent>
+      <NavbarMenu>
+        <NavbarMenuItem>
+          <Link
+            className="w-full"
+            to="#"
+            onClick={() => handleLinkClick('/about')}
+          >
+            About
+          </Link>
+        </NavbarMenuItem>
+        <NavbarMenuItem>
+          <Link
+            className="w-full"
+            to="#"
+            onClick={() => handleLinkClick('/recomendations')}
+          >
+            Recomendations
+          </Link>
+        </NavbarMenuItem>
+      </NavbarMenu>
     </Navbar>
   );
 };

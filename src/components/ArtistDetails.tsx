@@ -229,7 +229,7 @@ export function ArtistDetails() {
         {artist.similarArtists && artist.similarArtists.length > 0 && (
           <div className="mb-8">
             <h3 className={`text-xl font-semibold mb-3 ${headingColor}`}>Similar Artists</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {artist.similarArtists.map((similarArtist, index) => (
                 <Link 
                   key={similarArtist.id || `similar-artist-${index}`} 
