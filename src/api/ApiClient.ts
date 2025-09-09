@@ -1,9 +1,19 @@
+const getBaseUrl = () => {
+  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isProd = window.location.hostname === 'indiesphere.tech'; 
+
+  if (isProd) {
+    return 'https://indiesphere-api-bse9b6bff9c4fugw.eastus-01.azurewebsites.net/api';
+  }
+
+  return 'https://localhost:7598/api';
+};
+
 export class ApiClient {
   protected baseUrl: string;
 
-  constructor(baseUrl?: string) {
-    // Use environment variables for production
-    this.baseUrl = baseUrl || process.env.REACT_APP_API_BASE_URL || "https://localhost:7598/api";
+  constructor() {
+    this.baseUrl = getBaseUrl();
   }
 
   private getAuthHeaders(): HeadersInit {

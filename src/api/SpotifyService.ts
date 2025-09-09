@@ -22,10 +22,10 @@ export class SpotifyService extends ApiClient {
   private readonly storageKey = 'spotify_auth_state';
   private readonly tokenKey = 'auth_token';
   
-  constructor() {
-    const apiUrl = process.env.REACT_APP_API_URL || 'https://ea91d212a707.ngrok-free.app/api';
-    super(apiUrl);
-  }
+  // constructor() {
+    // const apiUrl = process.env.REACT_APP_API_URL || 'https://ea91d212a707.ngrok-free.app/api';
+    // super(apiUrl);
+  // }
   
   async search(query: string) {
     return await this.get<any[]>(`/spotify/search?query=${encodeURIComponent(query)}`);
